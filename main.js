@@ -1,18 +1,9 @@
+// -*- mode: js2; encoding: utf-8; -*-
+
 window.AudioContext = window.AudioContext || window.webkitAudioContext;
 var context = new AudioContext();
-jQuery(function () { // -*- mode: js2; encoding: utf-8; -*-
-  $.getJSON('./list.json', function(data) {
-    var $target = $('#file-list');
-    for(var i = 0; i < data.length; i++) {
-      var item = data[i];
-      var $tr = $('<tr>').data("item", item);
 
-      $('<td>').text(item.name).appendTo($tr);
-      $('<td>').text(item.title).appendTo($tr);
-      $('<td>').text(item.title2).appendTo($tr);
-      $tr.appendTo($target);
-    }
-  });
+jQuery(function () {
 
   var probeDefaultBufferSize = function() {
     var ua = navigator.userAgent;
@@ -116,6 +107,21 @@ jQuery(function () { // -*- mode: js2; encoding: utf-8; -*-
     request.send();
   };
 
-  $(document).on("click", '#file-list tr', playMusic);
-  $(document).on("touchend", '#file-list tr', playMusic);
+  $.getJSON('./list.json', function(data) {
+    var $target = $('#file-list');
+    for(var i = 0; i < data.length; i++) {
+      var item = data[i];
+      var $tr = $('<div>').addClass("music-row row").data("item", item);
+
+      $tr.on("click", playMusic);
+      $('<div>').addClass("col-xs-2 col-sm-1").text(item.name).appendTo($tr);
+      $('<div>').addClass("col-xs-10 col-sm-4").text(item.title).appendTo($tr);
+      $('<div>').addClass("clearfix visible-xs-block").appendTo($tr);
+      $('<div>').addClass("col-xs-10 col-xs-offset-2 col-sm-offset-0 col-sm-7").text(item.title2).appendTo($tr);
+      $tr.appendTo($target);
+    }
+  });
+
+  //$(document).on("click", '#file-list .music-row', playMusic);
+  //$(document).on("touchend", '#file-list .music-row', playMusic);
 });

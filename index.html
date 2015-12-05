@@ -38,8 +38,10 @@
     <script src="./seq.js"></script>
 
     <style>
-      .playing { background-color: #efe; }
       body { padding-top: 70px; }
+      .music-row { padding: 4px; background-color: #f7f7f7; margin: 4px 2px; }
+      .playing { background-color: #efe; }
+
     </style>
   </head>
   <body>
@@ -67,17 +69,9 @@
     </nav>
 
     <div class="container">
-
-      <table class="table table-condensed">
-        <thead>
-          <tr><th>名前</th><th>タイトル</th><th>タイトル2</th></tr>
-        </thead>
-        <tbody id="file-list">
-        </tbody>
-      </table>
-
+      <div id="file-list">
+      </div>
     </div>
-
 
     <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
     <script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
