@@ -36,18 +36,46 @@
     <script src="./mdevice.js"></script>
     <script src="./mus.js"></script>
     <script src="./seq.js"></script>
+
+    <style>
+      .playing { background-color: #efe; }
+      body { padding-top: 70px; }
+    </style>
   </head>
   <body>
+    <nav class="navbar navbar-default navbar-fixed-top">
+      <div class="container-fluid">
+        <!-- Brand and toggle get grouped for better mobile display -->
+        <div class="navbar-header">
+          <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1" aria-expanded="false">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a class="navbar-brand" href="#">muslib player</a>
+          <button id="btn-play" class="btn btn-default navbar-btn"><span class="glyphicon glyphicon-play"></span></button>
+          <button id="btn-stop" class="btn btn-default navbar-btn"><span class="glyphicon glyphicon-stop"></span></button>
+        </div>
+
+        <!-- Collect the nav links, forms, and other content for toggling -->
+        <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+          <p class="navbar-text"><a id="title" href="#" class="navbar-link"></a></p>
+          <p class="navbar-text"><a id="title2" href="#" class="navbar-link"></a></p>
+        </div><!-- /.navbar-collapse -->
+      </div><!-- /.container-fluid -->
+    </nav>
+
     <div class="container">
 
-      <table class="table table-condensed table-striped">
+      <table class="table table-condensed">
         <thead>
-          <tr><th>名前</th><th>操作</th></tr>
+          <tr><th>名前</th><th>タイトル</th><th>タイトル2</th></tr>
         </thead>
         <tbody id="file-list">
         </tbody>
       </table>
-      
+
     </div>
 
 

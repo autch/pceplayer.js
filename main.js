@@ -1,23 +1,22 @@
+window.AudioContext = window.AudioContext || window.webkitAudioContext;
+var context = new AudioContext();
 jQuery(function () { // -*- mode: js2; encoding: utf-8; -*-
-  window.AudioContext = window.AudioContext || window.webkitAudioContext;
-  var context = new AudioContext();
-
   $.getJSON('./list.json', function(data) {
     var $target = $('#file-list');
     for(var i = 0; i < data.length; i++) {
       var item = data[i];
-      var $tr = $('<tr>');
+      var $tr = $('<tr>').data("item", item);
 
       $('<td>').text(item.name).appendTo($tr);
-      var $button = $('<button>').addClass("btn btn-default btn-xs btn-pmd-play").attr("data-target", item.href).append($('<span>').addClass("glyphicon glyphicon-play").attr("aria-hidden", "true"));
-      $('<td>').append($button).appendTo($tr);
+      $('<td>').text(item.title).appendTo($tr);
+      $('<td>').text(item.title2).appendTo($tr);
       $tr.appendTo($target);
     }
   });
-  
+
   var probeDefaultBufferSize = function() {
     var ua = navigator.userAgent;
-    
+
     if(/Linux/.test(ua)) {
       return 8192;
     }
@@ -32,9 +31,40 @@ jQuery(function () { // -*- mode: js2; encoding: utf-8; -*-
     }
     return 4096;
   }
-  
-  $(document).on("click", '.btn-pmd-play', function (e) {
+
+  var stopMusic = function(e) {
+    if(window.muslib.instances) {
+      var scrNode = window.muslib.instances.scrNode;
+      if(scrNode) {
+        scrNode.disconnect(0);
+        scrNode.onaudioprocess = null;
+      }
+      window.muslib.instances = {};
+      $('.playing').removeClass("playing");
+      $('#title').text("");
+      $('#title2').text("");
+    }
+  };
+
+  $('#btn-stop').on("click", function(e) {
+    stopMusic();
+  });
+
+  $('#title').on("click", function() {
+    $('html, body').animate({
+      scrollTop: $(".playing").offset().top
+    }, 1000);
+  });
+
+  var playMusic = function (e) {
     var $self = $(e.currentTarget);
+    var item = $self.data("item");
+
+    stopMusic();
+
+    $('#title').text(item.title);
+    $('#title2').text(item.title2);
+    $self.addClass("playing");
 
     var unlockBuffer = context.createBuffer(1, 1, 22050);
     var unlockSrc = context.createBufferSource();
@@ -43,17 +73,9 @@ jQuery(function () { // -*- mode: js2; encoding: utf-8; -*-
     unlockSrc.start(0);
 
     var request = new XMLHttpRequest();
-    request.open('GET', $self.data("target"), true);
+    request.open('GET', item.href, true);
     request.responseType = 'arraybuffer';
     request.addEventListener('load', function () {
-      if(window.muslib.instances) {
-        var scrNode = window.muslib.instances.scrNode;
-        if(scrNode) {
-          scrNode.disconnect(0);
-          scrNode.onaudioprocess = null;        
-        }
-        window.muslib.instances = {};
-      }
 
       var scrNode = context.createScriptProcessor(probeDefaultBufferSize(), 1, 1);
       var srcNode = context.createOscillator(); //context.createBufferSource();
@@ -92,5 +114,8 @@ jQuery(function () { // -*- mode: js2; encoding: utf-8; -*-
       srcNode.start(0);
     });
     request.send();
-  });
+  };
+
+  $(document).on("click", '#file-list tr', playMusic);
+  $(document).on("touchend", '#file-list tr', playMusic);
 });

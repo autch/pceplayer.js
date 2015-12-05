@@ -10,7 +10,7 @@
   }, sexS = function(v) {
     return ((v & 0xffff) << 16) >> 16;
   };
-  
+
   function MDevice(fs, ch) {
     this.FS2 = fs /*>> 1*/;
     this.FOFS = Math.floor(Math.log2(this.FS2) * 12 * 256 + 0.5);
@@ -24,7 +24,7 @@
 
     this.IT_LOOP = 0x10;
     this.IT_FAST = 0x80;
-    
+
     this.IBASE0 = 43008 + root.muslib.inst.PITCH440 - 69*256+60*256;
 
     this.XSF1 = 10;
@@ -40,8 +40,8 @@
     do {
       var o = (cc >>> 14);
       var x = (cc & 0x03ff);
-      var d1 = sex(tbl[o]);
-      var d2 = sex(tbl[o + 1]);
+      var d1 = tbl[o];
+      var d2 = tbl[o + 1];
       if((cc += this.freq) >= this.loop_end) {
         cc -= this.loop_w;
       }
@@ -50,7 +50,7 @@
       d2 >>= 14;
       d1 += d2;
       d1 *= vv;
-      var s = buffer[p];
+      var s = sexS(buffer[p]);
       buffer[p++] = sexS(s + sexS(d1 >> 8));
     } while(--cnt);
     this.freqwk = cc;
@@ -63,8 +63,8 @@
     do {
       var o = (cc >>> 14);
       var x = (cc & 0x03ff);
-      var d1 = sex(tbl[o]);
-      var d2 = sex(tbl[o + 1]);
+      var d1 = tbl[o];
+      var d2 = tbl[o + 1];
       if((cc += this.freq) >= this.loop_end) {
         this.freq = 0;
         return;
@@ -74,7 +74,7 @@
       d2 >>= 14;
       d1 += d2;
       d1 *= vv;
-      var s = buffer[p];
+      var s = sexS(buffer[p]);
       buffer[p++] = sexS(s + sexS(d1 >> 8));
     } while(--cnt);
     this.freqwk = cc;
@@ -265,13 +265,13 @@
   MDevice.prototype.Render = function(buffer) {
     if(this.freq) {
       this.genvib.call(this);
-      this.freq = sexS(root.muslib.gexp(this.cpitch +
+      this.freq = root.muslib.gexp(this.cpitch +
                                    (this.ptwk1 >> this.XSF1) +
-                                   (this.ptwk2 >> this.XSF2)));
+                                   (this.ptwk2 >> this.XSF2));
 
       this.genenv.call(this);
       var vv = (this.pvol + this.pexp + this.envwk) >> this.VOLS;
-      if(vv <= 11) vv = 0; else vv = sexS(root.muslib.gexp(vv));
+      if(vv <= 11) vv = 0; else vv = root.muslib.gexp(vv);
       this.genwave.call(this, buffer, vv, buffer.length);
     }
   };
