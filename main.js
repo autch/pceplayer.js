@@ -31,7 +31,7 @@ jQuery(function () {
         scrNode.onaudioprocess = null;
       }
       window.muslib.instances = {};
-      $('.playing').removeClass("playing");
+      $('.playing').removeClass("active playing");
       $('#title').text("");
       $('#title2').text("");
     }
@@ -50,12 +50,14 @@ jQuery(function () {
   var playMusic = function (e) {
     var $self = $(e.currentTarget);
     var item = $self.data("item");
+    var justStop = $self.hasClass("playing");
 
     stopMusic();
+    if(justStop) return;
 
-    $('#title').text(item.title);
+    $('#title').text(item.title == "" ? "[" + item.filename + "]" : item.title);
     // $('#title2').text(item.title2);
-    $self.addClass("playing");
+    $self.addClass("playing active");
 
     var unlockBuffer = context.createBuffer(1, 1, 22050);
     var unlockSrc = context.createBufferSource();
@@ -111,11 +113,11 @@ jQuery(function () {
     var $target = $('#file-list');
     for(var i = 0; i < data.length; i++) {
       var item = data[i];
-      var $tr = $('<div>').addClass("music-row row").data("item", item);
+      var $tr = $('<div>').addClass("music-row row list-group-item").data("item", item);
 
       $tr.on("click", playMusic);
       $('<div>').addClass("col-xs-12 col-sm-7").append($('<h5>').text(item.title == "" ? "[" + item.filename + "]" : item.title)).appendTo($tr);
-      $('<div>').addClass("col-xs-12 col-sm-5").append($('<p>').text(item.title2)).appendTo($tr);
+      $('<div>').addClass("col-xs-12 col-sm-5").append($('<p>').text(item.title2).addClass("title2")).appendTo($tr);
       $tr.appendTo($target);
     }
   });
