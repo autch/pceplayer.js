@@ -39,7 +39,7 @@
     var p = 0;
     do {
       var o = (cc >>> 14);
-      var x = (cc & 0x03ff);
+      var x = (cc & 0x3fff);
       var d1 = tbl[o];
       var d2 = tbl[o + 1];
       if((cc += this.freq) >= this.loop_end) {
@@ -50,8 +50,7 @@
       d2 >>= 14;
       d1 += d2;
       d1 *= vv;
-      var s = sexS(buffer[p]);
-      buffer[p++] = sexS(s + sexS(d1 >> 8));
+      buffer[p++] += d1 >> 8;
     } while(--cnt);
     this.freqwk = cc;
   };
@@ -62,7 +61,7 @@
     var p = 0;
     do {
       var o = (cc >>> 14);
-      var x = (cc & 0x03ff);
+      var x = (cc & 0x3fff);
       var d1 = tbl[o];
       var d2 = tbl[o + 1];
       if((cc += this.freq) >= this.loop_end) {
@@ -74,8 +73,7 @@
       d2 >>= 14;
       d1 += d2;
       d1 *= vv;
-      var s = sexS(buffer[p]);
-      buffer[p++] = sexS(s + sexS(d1 >> 8));
+      buffer[p++] += d1 >> 8;
     } while(--cnt);
     this.freqwk = cc;
   };
