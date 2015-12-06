@@ -43,7 +43,7 @@ jQuery(function () {
 
   $('#title').on("click", function() {
     $('html, body').animate({
-      scrollTop: $(".playing").offset().top
+      scrollTop: $(".playing").offset().top - parseInt($('body').css("padding-top"))
     }, 1000);
   });
 
@@ -54,7 +54,7 @@ jQuery(function () {
     stopMusic();
 
     $('#title').text(item.title);
-    $('#title2').text(item.title2);
+    // $('#title2').text(item.title2);
     $self.addClass("playing");
 
     var unlockBuffer = context.createBuffer(1, 1, 22050);
@@ -114,10 +114,8 @@ jQuery(function () {
       var $tr = $('<div>').addClass("music-row row").data("item", item);
 
       $tr.on("click", playMusic);
-      $('<div>').addClass("col-xs-2 col-sm-1").text(item.name).appendTo($tr);
-      $('<div>').addClass("col-xs-10 col-sm-4").text(item.title).appendTo($tr);
-      $('<div>').addClass("clearfix visible-xs-block").appendTo($tr);
-      $('<div>').addClass("col-xs-10 col-xs-offset-2 col-sm-offset-0 col-sm-7").text(item.title2).appendTo($tr);
+      $('<div>').addClass("col-xs-12 col-sm-7").append($('<h5>').text(item.title == "" ? "[" + item.filename + "]" : item.title)).appendTo($tr);
+      $('<div>').addClass("col-xs-12 col-sm-5").append($('<p>').text(item.title2)).appendTo($tr);
       $tr.appendTo($target);
     }
   });

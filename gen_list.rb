@@ -33,7 +33,8 @@ puts (Dir.glob("./pmd/*.pmd").sort_by{|v| v.downcase }.map do |filename|
     end
     
     {
-      "href" => filename, "name" => File.basename(filename, ".pmd"),
+      "href" => filename, "filename" => File.basename(filename), 
+      "name" => File.basename(filename, ".pmd"),
       "title" => title, "title2" => title2
     }
   end
