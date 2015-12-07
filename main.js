@@ -21,7 +21,7 @@ jQuery(function () {
       return 2048;
     }
     return 4096;
-  }
+  };
 
   var stopMusic = function(e) {
     if(window.muslib.instances) {
@@ -53,7 +53,7 @@ jQuery(function () {
     var justStop = $self.hasClass("playing");
 
     stopMusic();
-    if(justStop) return;
+    if(justStop) return false;
 
     $('#title').text(item.title == "" ? "[" + item.filename + "]" : item.title);
     // $('#title2').text(item.title2);
@@ -107,13 +107,14 @@ jQuery(function () {
       srcNode.start(0);
     });
     request.send();
+    return false;
   };
 
   $.getJSON('./list.json', function(data) {
     var $target = $('#file-list');
     for(var i = 0; i < data.length; i++) {
       var item = data[i];
-      var $tr = $('<div>').addClass("music-row row list-group-item").data("item", item);
+      var $tr = $('<a>').attr("href", "#").addClass("row list-group-item").data("item", item);
 
       $tr.on("click", playMusic);
       $('<div>').addClass("col-xs-12 col-sm-7").append($('<h5>').text(item.title == "" ? "[" + item.filename + "]" : item.title)).appendTo($tr);
@@ -121,7 +122,4 @@ jQuery(function () {
       $tr.appendTo($target);
     }
   });
-
-  //$(document).on("click", '#file-list .music-row', playMusic);
-  //$(document).on("touchend", '#file-list .music-row', playMusic);
 });
