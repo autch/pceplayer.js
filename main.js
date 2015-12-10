@@ -110,6 +110,8 @@ jQuery(function () {
     return false;
   };
 
+  var m = /\bm=(.*?)(&|$)/.exec(window.location.search);
+  var f = m && m[1];
   $.getJSON('./list.json', function(data) {
     var $target = $('#file-list');
     for(var i = 0; i < data.length; i++) {
@@ -120,6 +122,18 @@ jQuery(function () {
       $('<div>').addClass("col-xs-12 col-sm-7").append($('<h5>').text(item.title == "" ? "[" + item.filename + "]" : item.title)).appendTo($tr);
       $('<div>').addClass("col-xs-12 col-sm-5").append($('<p>').text(item.title2).addClass("title2")).appendTo($tr);
       $tr.appendTo($target);
+
+      if(f === item.filename) {
+        (function(tr) {
+          window.setTimeout(function() {
+            tr.click();
+            $('html, body').animate({
+              scrollTop: tr.offset().top - parseInt($('body').css("padding-top"))
+            }, 1000);
+          }, 0);
+        })($tr);
+        f = null;
+      }
     }
   });
 });
