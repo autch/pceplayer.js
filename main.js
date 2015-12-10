@@ -109,7 +109,22 @@ jQuery(function () {
     request.send();
     return false;
   };
-
+  var entityMap = {
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;',
+    '"': '&quot;',
+    "'": '&#39;',
+    '/': '&#x2F;',
+    '`': '&#x60;',
+    '=': '&#x3D;',
+    "\n": "<br>"
+  };
+  var escapeHTML = function(string) {
+    return String(string).replace(/[&<>"'`=\/\n]/g, function(s) {
+      return entityMap[s];
+    });
+  };
   var m = /\bm=(.*?)(&|$)/.exec(window.location.search);
   var f = m && m[1];
   $.getJSON('./list.json', function(data) {
@@ -119,8 +134,8 @@ jQuery(function () {
       var $tr = $('<a>').attr("href", "#").addClass("row list-group-item").data("item", item);
 
       $tr.on("click", playMusic);
-      $('<div>').addClass("col-xs-12 col-sm-7").append($('<h5>').text(item.title == "" ? "[" + item.filename + "]" : item.title)).appendTo($tr);
-      $('<div>').addClass("col-xs-12 col-sm-5").append($('<p>').text(item.title2).addClass("title2")).appendTo($tr);
+      $('<div>').addClass("col-xs-12 col-sm-7").append($('<h5>').html(escapeHTML(item.title == "" ? "[" + item.filename + "]" : item.title))).appendTo($tr);
+      $('<div>').addClass("col-xs-12 col-sm-5").append($('<p>').html(escapeHTML(item.title2)).addClass("title2")).appendTo($tr);
       $tr.appendTo($target);
 
       if(f === item.filename) {
