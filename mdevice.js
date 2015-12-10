@@ -12,14 +12,14 @@
   };
 
   function MDevice(fs, ch) {
-    this.FS2 = fs /*>> 1*/;
+    this.FS2 = fs;
     this.FOFS = Math.floor(Math.log2(this.FS2) * 12 * 256 + 0.5);
     this.ch = ch;
 
     this.VOLS = 1;
     this.ENVSTART = (-4 * 12 * 256) << this.VOLS;
     this.ENVSTOP = (-10 * 12 * 256) << this.VOLS;
-    this.ENVRR = Math.floor((4000 << this.VOLS) * 16000.0 / this.FS2);
+    this.ENVRR = 4000 << this.VOLS;
     this.T1CONST = 0x4000;
 
     this.IT_LOOP = 0x10;

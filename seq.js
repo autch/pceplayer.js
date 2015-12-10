@@ -5,8 +5,7 @@
   root.muslib = root["muslib"] || {};
 
   function Seq(fs, maxch) {
-    this.FS2 = fs /*>> 1*/;
-    //this.MCOUNT = (this.FS2 * 40 + 64) >> 7;
+    this.FS2 = fs;
     this.MCOUNT = Math.floor(this.FS2 * 2.5 * 16 / 128 + 0.5);
     this.TATT_DRUMS = 1;
     this.TATT_NOOFF = 2;
