@@ -90,7 +90,7 @@ jQuery(function () {
         return Encoding.convert(r, { to: 'UNICODE', from: 'SJIS', type: 'string' });
       };
       
-      console.log(muslib.seq.GetTitle(conv), muslib.seq.GetTitle2(conv));
+      // console.log(muslib.seq.GetTitle(conv), muslib.seq.GetTitle2(conv));
 
       scrNode.onaudioprocess = function (ev) {
         var outbuf = ev.outputBuffer.getChannelData(0);
