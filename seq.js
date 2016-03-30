@@ -128,6 +128,25 @@
     this.title2base = this.getAdrsAt(this.seqptr + s + 4);
   };
 
+  Seq.prototype.getString = function(offset, conv) {
+    for(var e = offset; this.data[e] != 0x00; e++) {
+      //
+    }
+    var r = this.data.slice(offset, e);
+    
+    if(typeof conv !== "undefined")
+      return conv.call(this, r);
+    else
+      return r;
+  };
+  
+  Seq.prototype.GetTitle = function(conv) {
+    return this.getString(this.titlebase, conv);
+  };
+  Seq.prototype.GetTitle2 = function(conv) {
+    return this.getString(this.title2base, conv);
+  };
+  
   Seq.prototype.SeqPortaExecP = function(psw) {
     if((psw.mdwk.ptwk1 += psw.porvv) >= 0) {
       psw.mdwk.ptwk1 = 0;

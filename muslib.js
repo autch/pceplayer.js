@@ -19,7 +19,7 @@
   
   Muslib.prototype.IsFinished = function() {
     return this.mus.IsFinished();
-  }
+  };
 
   root.muslib.Muslib = Muslib;
 
