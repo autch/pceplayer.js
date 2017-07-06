@@ -17,7 +17,6 @@
         iframe.width = me.getAttribute('data-height');
 
     me.parentElement.insertBefore(iframe, me);
-    iframe.contentWindow.json_url = me.getAttribute('data-url');
 
     var content = (function(){/*
 <!DOCTYPE html>
@@ -59,6 +58,9 @@
   <script src="./mus.js"></script>
   <script src="./seq.js"></script>
   <script src="./browser.js"></script>
+  <script>
+    window.json_url = %JSON_URL%;
+  </script>
 </head>
 <body style="height: 100vh;">
   <div class="container-fluid" style="height: 100%;">
@@ -83,16 +85,10 @@
       </div>
     </div>
   </div>
-
-  <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
-  <script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
-  <!-- Latest compiled and minified JavaScript -->
-  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js" integrity="sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS"
-    crossorigin="anonymous"></script>
   <script src="./browser-ui.js"></script>
   <script src="./widget-main.js"></script>
 </body>
-</html>*/}).toString().replace(/(\n)/g, '').split('/*')[1].split('*/')[0];
+</html>*/}).toString().replace(/(\n)/g, '').split('/*')[1].split('*/')[0].replace(/%JSON_URL%/, JSON.stringify(me.getAttribute('data-url')));
 
     var doc = iframe.contentWindow.document;
     doc.open();

@@ -9,56 +9,92 @@
         document.addEventListener('DOMContentLoaded', fn);
       }
     },
+    delegate: function(el, evt, sel, handler) {
+      el.addEventListener(evt, function(event) {
+        var t = event.target;
+        var h = true;
+        while (t && t !== this) {
+          if (t.matches(sel)) {
+            h = handler.call(t, event);
+            break;
+          }
+          t = t.parentNode;
+        }
+        return h;
+      });
+    },
     autoplay: function (tr) {
       window.setTimeout(function () {
-        var event = jQuery.Event('click');
-        event.target = tr.get(0);
-        $('#file-list').trigger(event);
-        $('html, body').animate({
-          scrollTop: tr.offset().top - parseInt($('body').css("padding-top"))
-        }, 1000);
+        var event = new MouseEvent('click', { bubbles: true, cancelable: true });
+        tr.dispatchEvent(event);
+        window.scrollBy(0, tr.getBoundingClientRect().top + document.body.scrollTop - parseInt(getComputedStyle(document.body)["padding-top"]));
       }, 0);
     }
   };
   window.muslib.ui.ready(function () {
     var playHandler = function (e) {
-      $('a.active').click();
+      var event = new MouseEvent('click', { bubbles: true, cancelable: true });
+      var tr = document.querySelector('.active')
+      if(tr != null) tr.dispatchEvent(event);
     }, stopHandler = function (e) {
       window.muslib.browser.stopMusic();
       setAsPlay();
     };
 
+    var btnPlay = document.getElementById('btn-play');
+    var btnSpan = btnPlay.querySelector('span');
+
+    var titleElem = document.getElementById('title');
+    var title2Elem = document.getElementById('title2');
+
     var setAsPlay = function () {
-      $('#btn-play span').removeClass("glyphicon-stop").addClass("glyphicon-play");
-      $('#btn-play').off("click").on("click", playHandler);
+      btnSpan.classList.remove('glyphicon-stop');
+      btnSpan.classList.add('glyphicon-play');
+
+      btnPlay.removeEventListener('click', stopHandler);
+      btnPlay.addEventListener('click', playHandler);
     }, setAsStop = function () {
-      $('#btn-play span').removeClass("glyphicon-play").addClass("glyphicon-stop");
-      $('#btn-play').off("click").on("click", stopHandler);
+      btnSpan.classList.remove('glyphicon-play');
+      btnSpan.classList.add('glyphicon-stop');
+
+      btnPlay.removeEventListener('click', playHandler);
+      btnPlay.addEventListener('click', stopHandler);
     };
 
-    document.getElementById('title').addEventListener("click", function () {
-      $('html, body').animate({
-        scrollTop: $(".active").offset().top - parseInt($('body').css("padding-top"))
-      }, 1000);
+    document.getElementById('title').addEventListener("click", function (e) {
+      e.preventDefault();
+      var tr = document.querySelector('.active');
+      if(tr == null) return false;
+      window.scrollTo(0, tr.getBoundingClientRect().top + document.body.scrollTop - parseInt(getComputedStyle(document.body)["padding-top"]));
+      return false;
     });
 
     var playMusic = function (e) {
-      var $self = $(e.currentTarget);
-      var item = $self.data("item");
+      var self = this;
+      var item = {
+        href: self.getAttribute('data-href'),
+        filename: self.getAttribute('data-filename'),
+        title: self.getAttribute('data-title'),
+        title2: self.getAttribute('data-title2'),
+      };
 
       window.muslib.browser.stopMusic();
-      $('.active').removeClass('active');
+      (function() {
+        var tr = document.querySelector('.active');
+        if(tr != null) tr.classList.remove('active');
+      })();
 
-      $('#title').text(item.title == "" ? "[" + item.filename + "]" : item.title);
-      $('#title2').text(item.title2);
-      $self.addClass("active");
+      titleElem.textContent = (item.title == "") ? "[" + item.filename + "]" : item.title;
+      if(title2Elem) title2Elem.textContent = item.title2;
+      self.classList.add('active');
       setAsStop();
 
       window.muslib.browser.playMusic(item.href);
+      e.preventDefault();
       return false;
     };
 
-    $('#file-list').on("click", 'a.list-group-item', playMusic);
+    window.muslib.ui.delegate(document.getElementById('file-list'), 'click', 'a.list-group-item', playMusic);
     setAsPlay();
   });
 })();
