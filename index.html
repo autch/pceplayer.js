@@ -6,12 +6,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
     <title>muslib player</title>
-
     <!-- Latest compiled and minified CSS -->
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
-
-    <!-- Optional theme -->
-    <!--link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap-theme.min.css" integrity="sha384-fLW2N01lMqjakBkx3l/M9EahuwpSfeNvV63J5ezn3uZzapT0u7EYsXMjQV+0En5r" crossorigin="anonymous"-->
 
     <script src="./muslib.js"></script>
     <script src="./gexp.js"></script>
@@ -30,13 +26,15 @@
     <script src="./mdevice.js"></script>
     <script src="./mus.js"></script>
     <script src="./seq.js"></script>
-
+    <script src="./browser.js"></script>
     <style>
       body { padding-top: 70px; }
       .title2 { font-size: 80%; }
+      a.list-group-item { padding: 8px 8px; }
     </style>
   </head>
   <body>
+    <a href="https://github.com/autch/pceplayer.js"><img style="position: fixed; top: 0; right: 0; border: 0; z-index: 100000;" src="https://camo.githubusercontent.com/38ef81f8aca64bb9a64448d0d70f1308ef5341ab/68747470733a2f2f73332e616d617a6f6e6177732e636f6d2f6769746875622f726962626f6e732f666f726b6d655f72696768745f6461726b626c75655f3132313632312e706e67" alt="Fork me on GitHub" data-canonical-src="https://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png"></a>
     <nav class="navbar navbar-default navbar-fixed-top">
       <div class="container-fluid">
         <!-- Brand and toggle get grouped for better mobile display -->
@@ -47,15 +45,16 @@
             <span class="icon-bar"></span>
             <span class="icon-bar"></span>
           </button>
-          <a class="navbar-brand" href="#">muslib player</a>
-          <button id="btn-play" class="btn btn-default navbar-btn"><span class="glyphicon glyphicon-play"></span></button>
-          <button id="btn-stop" class="btn btn-default navbar-btn"><span class="glyphicon glyphicon-stop"></span></button>
+          <a class="navbar-brand" href="#">P/ECE PMD Web Player</a>
         </div>
 
         <!-- Collect the nav links, forms, and other content for toggling -->
         <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
-          <p class="navbar-text"><a id="title" href="#" class="navbar-link"></a></p>
-          <p class="navbar-text"><a id="title2" href="#" class="navbar-link"></a></p>
+          <ul class="nav navbar-nav">
+            <li><button id="btn-play" class="btn btn-default navbar-btn"><span class="glyphicon glyphicon-play"></span></button></li>
+            <li><p class="navbar-text"><a id="title" href="#" class="navbar-link"></a></p></li>
+            <!--li><p class="navbar-text"><a id="title2" href="#" class="navbar-link"></a></p></li-->
+          </ul>
         </div><!-- /.navbar-collapse -->
       </div><!-- /.container-fluid -->
     </nav>
@@ -70,7 +69,7 @@
     <!-- Latest compiled and minified JavaScript -->
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js" integrity="sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS" crossorigin="anonymous"></script>
 
-    <script src="./encoding.min.js"></script>
+    <script src="./browser-ui.js"></script>
     <script src="./main.js"></script>
   </body>
 </html>
