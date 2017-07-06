@@ -11,10 +11,10 @@
     iframe.width = '400px';
     iframe.height = '320px';
 
-    if(iframe.hasAttribute('data-width'))
+    if(me.hasAttribute('data-width'))
         iframe.width = me.getAttribute('data-width');
-    if(iframe.hasAttribute('data-height'))
-        iframe.width = me.getAttribute('data-height');
+    if(me.hasAttribute('data-height'))
+        iframe.height = me.getAttribute('data-height');
 
     me.parentElement.insertBefore(iframe, me);
 
