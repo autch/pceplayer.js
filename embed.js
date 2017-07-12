@@ -81,7 +81,7 @@
       <div id="file-list" class="list-group" style="flex: 1 1 auto; overflow-y: scroll;">
       </div>
       <div class="panel-footer" style="flex: 0 1 auto;">
-        <a href="https://github.com/autch/pceplayer.js">P/ECE PMD Web Player Widget</a>
+        <a target="_blank" href="https://github.com/autch/pceplayer.js">P/ECE PMD Web Player Widget</a>
       </div>
     </div>
   </div>
