@@ -3,7 +3,12 @@
 
 require 'json'
 
-puts (Dir.glob("./pmd/*.pmd").sort_by{|v| v.downcase }.map do |filename|
+if ARGV.empty?
+  puts "Usage: gen_list.rb directory/"
+  exit
+end
+
+puts (Dir.glob(File.join(ARGV.shift, "*.pmd")).sort_by{|v| v.downcase }.map do |filename|
   File.open(filename, "rb:Shift_JIS:UTF-8") do |file|
     part_num = file.getbyte
     part_num = file.getbyte if part_num == 0
