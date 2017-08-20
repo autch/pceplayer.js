@@ -311,7 +311,11 @@
 			root.muslib.inst.PITCH_C4,
 			new Int8Array(wdi_TOMH1),
 			0,
-			2360 << 14
+			/* http://www.piece-me.org/piece-lab/piece-lab-2017.txt
+			  * Mon Aug 14 08:16:30 JST 2017 Naoyuki Sawa
+			  - ドラム音色のノイズ
+			*/
+			(2360 - 73) << 14
 		);
 
 })((typeof window != "undefined") ? window : module.exports);
