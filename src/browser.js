@@ -75,7 +75,6 @@
         const scrNode = this.context.createScriptProcessor(probeDefaultBufferSize(), 1, 1);
         const srcNode = this.context.createOscillator(); //context.createBufferSource();
         srcNode.connect(scrNode);
-        scrNode.onaudioprocess = this.createAudioProcess();
         scrNode.connect(this.context.destination);
 
         const muslib = new muslibMod.Muslib(this.context.sampleRate);
@@ -95,6 +94,7 @@
         };
 
         promise.then(value => {
+            scrNode.onaudioprocess = this.createAudioProcess();
             muslib.PlayMusic(value);
             srcNode.start(0);
         }).catch(error => {
