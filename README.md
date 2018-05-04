@@ -10,7 +10,7 @@ UI としてはページ全体を使う[フル版](http://pceplayer.tnok.jp/)と
 使い方
 -----
 
-Git と Ruby をインストールしておきます。
+Git と Node と Ruby をインストールしておきます。
 
 1. `$ git clone https://github.com/autch/pceplayer.js.git`
 1. `$ cd pceplayer`

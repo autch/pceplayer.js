@@ -28,7 +28,8 @@ function Seq(fs, maxch) {
     this.initCommands();
 }
 
-function SeqWk(ch, pseq, pseq_off, mdev) {
+function SeqWk(seq, ch, pseq, pseq_off, mdev) {
+    this.seq = seq;
     this.pseq = pseq;
     this.pseq_off = pseq_off;
     this.porvv = 0;
@@ -48,7 +49,7 @@ function SeqWk(ch, pseq, pseq_off, mdev) {
     };
     this.mdwk = mdev;
     this.mdwk.SetupCh(ch);
-    this.mdwk.SetInst(0);
+    this.mdwk.SetInst(this.seq.mus.getInst(0));
     this.mdwk.SetVol(127 - ch * 16);
     this.mdwk.SetVib(0, 0, 0, 0);
     this.dtn = 0;
@@ -111,11 +112,11 @@ Seq.prototype.StartSeq = function (mus, buffer) {
     let s = 1;
     let i = 0;
     for (; i < n; i++, s += 2) {
-        const psw = new SeqWk(i, buffer, this.getAdrsAt(this.seqptr + s), mus.getDevice(i));
+        const psw = new SeqWk(this, i, buffer, this.getAdrsAt(this.seqptr + s), mus.getDevice(i));
         this.seqwk.push(psw);
     }
     for (; i < this.MAXSEQ; i++) {
-        let psw = new SeqWk(i, buffer, 0, mus.getDevice(i));
+        let psw = new SeqWk(this, i, buffer, 0, mus.getDevice(i));
         psw.run = 0;
         this.seqwk.push(psw);
     }
