@@ -29,7 +29,7 @@
         this.instances = {};
     }
 
-    MuslibBrowserInterface.prototype.stopMusic = function () {
+    MuslibBrowserInterface.prototype.defaultDoneCallback = function(next) {
         if ('scrNode' in this.instances) {
             const scrNode = this.instances.scrNode;
             if (scrNode) {
@@ -40,6 +40,10 @@
         }
     };
 
+    MuslibBrowserInterface.prototype.stopMusic = function () {
+        this.defaultDoneCallback();
+    };
+
     const muslibMod = require('./muslib.js');
 
     MuslibBrowserInterface.prototype.createAudioProcess = function() {
@@ -48,9 +52,7 @@
             const outbuf = ev.outputBuffer.getChannelData(0);
 
             if (muslib.IsFinished()) {
-                this.scrNode.disconnect(0);
-                this.scrNode.onaudioprocess = null;
-                return;
+                this.instances.doneCallback();
             }
 
             for (let op = 0; op < outbuf.length;) {
@@ -63,7 +65,7 @@
         }
     };
 
-    MuslibBrowserInterface.prototype.doPlayMusic = function(promise) {
+    MuslibBrowserInterface.prototype.doPlayMusic = function(promise, callback) {
         const unlockBuffer = this.context.createBuffer(1, 1, 22050);
         const unlockSrc = this.context.createBufferSource();
         unlockSrc.buffer = unlockBuffer;
@@ -78,10 +80,18 @@
 
         const muslib = new muslibMod.Muslib(this.context.sampleRate);
 
+        let cb;
+        if(callback) {
+            cb = callback;
+        } else {
+            cb = this.defaultDoneCallback;
+        }
+
         this.instances = {
             muslib: muslib,
             srcNode: srcNode,
-            scrNode: scrNode
+            scrNode: scrNode,
+            doneCallback: cb
         };
 
         promise.then(value => {
@@ -91,13 +101,13 @@
         });
     };
 
-    MuslibBrowserInterface.prototype.playMusicFromData = function(data) {
+    MuslibBrowserInterface.prototype.playMusicFromData = function(data, cb) {
         this.doPlayMusic(new Promise((resolve, reject) => {
             resolve(data);
-        }));
+        }), cb);
     };
 
-    MuslibBrowserInterface.prototype.playMusicFromURL = function (href) {
+    MuslibBrowserInterface.prototype.playMusicFromURL = function (href, cb) {
         this.doPlayMusic(new Promise((resolve, reject) => {
             const request = new XMLHttpRequest();
             request.open('GET', href, true);
@@ -109,7 +119,7 @@
                 reject(pe);
             });
             request.send();
-        }));
+        }), cb);
     };
 
     window.MuslibBrowserInterface = MuslibBrowserInterface;

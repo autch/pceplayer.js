@@ -94,7 +94,9 @@
             self.classList.add('active');
             setAsStop();
 
-            browserIF.playMusicFromURL(item.href);
+            browserIF.playMusicFromURL(item.href, () => {
+                setAsPlay();
+            });
             e.preventDefault();
             return false;
         };
