@@ -1,9 +1,9 @@
 (function() {
     'use strict';
 
-    var me = document.currentScript;
+    const me = document.currentScript;
 
-    var iframe = document.createElement('iframe');
+    const iframe = document.createElement('iframe');
     iframe.scrolling = 'no';
     iframe.frameBorder = 0;
     iframe.marginWidth = 0;
@@ -18,7 +18,7 @@
 
     me.parentElement.insertBefore(iframe, me);
 
-    var content = (function(){/*
+    const content = (function(){/*
 <!DOCTYPE html>
 <html lang="ja">
 <head>
@@ -40,24 +40,7 @@
       padding: 4px 15px;
     }
   </style>
-  <script src="./muslib.js"></script>
-  <script src="./gexp.js"></script>
-  <script src="./inst.js"></script>
-  <script src="./wave/i_BD909.js"></script>
-  <script src="./wave/i_SDGATE.js"></script>
-  <script src="./wave/i_SD909.js"></script>
-  <script src="./wave/i_HO909.js"></script>
-  <script src="./wave/i_HC909.js"></script>
-  <script src="./wave/i_CYMBD.js"></script>
-  <script src="./wave/i_TOMH1.js"></script>
-  <script src="./wave/i_TOMM1.js"></script>
-  <script src="./wave/i_TOML1.js"></script>
-  <script src="./wave/i_HANDCLAP.js"></script>
-  <script src="./instdef.js"></script>
-  <script src="./mdevice.js"></script>
-  <script src="./mus.js"></script>
-  <script src="./seq.js"></script>
-  <script src="./browser.js"></script>
+  <script src="./dist/browser.dist.js"></script>
   <script>
     window.json_url = %JSON_URL%;
   </script>
@@ -90,7 +73,7 @@
 </body>
 </html>*/}).toString().replace(/(\n)/g, '').split('/*')[1].split('*/')[0].replace(/%JSON_URL%/, JSON.stringify(me.getAttribute('data-url')));
 
-    var doc = iframe.contentWindow.document;
+    const doc = iframe.contentWindow.document;
     doc.open();
     doc.write(content);
     doc.close();

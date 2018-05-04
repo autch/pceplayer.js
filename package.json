@@ -1,0 +1,23 @@
+{
+  "name": "pceplayer.js",
+  "version": "1.0.0",
+  "description": "pceplayer.js ============",
+  "main": "main.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/autch/pceplayer.js.git"
+  },
+  "author": "",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/autch/pceplayer.js/issues"
+  },
+  "homepage": "https://github.com/autch/pceplayer.js#readme",
+  "devDependencies": {
+    "webpack": "^4.6.0",
+    "webpack-cli": "^2.1.2"
+  }
+}
