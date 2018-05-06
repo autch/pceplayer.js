@@ -23,11 +23,18 @@
 
     function MuslibBrowserInterface() {
         this.muslibSize = 128;
-        this.context = new AudioContext();
+        this.context = null; //new AudioContext();
         this.tmpbuf = new Int16Array(this.muslibSize);
 
         this.instances = {};
     }
+
+    MuslibBrowserInterface.prototype.getContext = function() {
+        if(this.context === null) {
+            this.context = new AudioContext();
+        }
+        return this.context;
+    };
 
     MuslibBrowserInterface.prototype.defaultDoneCallback = function(next) {
         if ('scrNode' in this.instances) {
@@ -65,19 +72,55 @@
         }
     };
 
+    MuslibBrowserInterface.prototype.doLoadMusic = async function(promise) {
+        const muslib = new muslibMod.Muslib(44100);
+
+        this.instances = {
+            muslib: muslib,
+        };
+
+        let data = await promise;
+        muslib.PlayMusic(data);
+
+        return muslib;
+    };
+
+    MuslibBrowserInterface.prototype.loadMusicFromData = function(data) {
+        return this.doLoadMusic(new Promise((resolve, reject) => {
+            resolve(data);
+        }));
+    };
+
+    MuslibBrowserInterface.prototype.loadMusicFromURL = function(href) {
+        return this.doLoadMusic(new Promise((resolve, reject) => {
+            const request = new XMLHttpRequest();
+            request.open('GET', href, true);
+            request.responseType = 'arraybuffer';
+            request.addEventListener('load', (pe) => {
+                resolve(new Uint8Array(request.response));
+            });
+            request.addEventListener('error', (pe) => {
+                reject(pe);
+            });
+            request.send();
+        }));
+    };
+
     MuslibBrowserInterface.prototype.doPlayMusic = function(promise, callback) {
-        const unlockBuffer = this.context.createBuffer(1, 1, 22050);
-        const unlockSrc = this.context.createBufferSource();
+        const context = this.getContext();
+
+        const unlockBuffer = context.createBuffer(1, 1, 22050);
+        const unlockSrc = context.createBufferSource();
         unlockSrc.buffer = unlockBuffer;
-        unlockSrc.connect(this.context.destination);
+        unlockSrc.connect(context.destination);
         unlockSrc.start(0);
 
-        const scrNode = this.context.createScriptProcessor(probeDefaultBufferSize(), 1, 1);
-        const srcNode = this.context.createOscillator(); //context.createBufferSource();
+        const scrNode = context.createScriptProcessor(probeDefaultBufferSize(), 1, 1);
+        const srcNode = context.createOscillator(); //context.createBufferSource();
         srcNode.connect(scrNode);
-        scrNode.connect(this.context.destination);
+        scrNode.connect(context.destination);
 
-        const muslib = new muslibMod.Muslib(this.context.sampleRate);
+        const muslib = new muslibMod.Muslib(context.sampleRate);
 
         let cb;
         if(callback) {
