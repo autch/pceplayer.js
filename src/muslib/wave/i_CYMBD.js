@@ -1,6 +1,7 @@
 'use strict';
 
-const inst = require('../inst.js');
+import {inst, createInst} from "../inst.js";
+
 const wdi_CYMBD = [
     1, 0, 1, -2, 2, -11, -12, -8,
     1, -5, 10, 8, 13, -3, 13, 10,
@@ -1229,14 +1230,13 @@ const wdi_CYMBD = [
     -82, -75, -128,
 ];
 
-exports.i_CYMBD =
-    inst.createInst(
+export default createInst(
         0,
         0,
         0,
         0,
-        inst.inst.PITCH16K,
-        inst.inst.PITCH_C4,
+        inst.PITCH16K,
+        inst.PITCH_C4,
         new Int8Array(wdi_CYMBD),
         0,
         /* http://www.piece-me.org/piece-lab/piece-lab-2017.txt

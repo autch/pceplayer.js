@@ -77,9 +77,9 @@ const div12t2 = [
     0, 0, 0, 0,				   // 21
 ];
 
-exports.gexp = function (n) {
+export default function gexp(n) {
     let a = n >> 8;
     let b = div12t1[a];
 
     return (expt[b] + ((expb[b] * (n & 0xff)) >> 8)) >> div12t2[a];
-};
+}

@@ -1,24 +1,4 @@
-(function() {
-    'use strict';
-
-    const me = document.currentScript;
-
-    const iframe = document.createElement('iframe');
-    iframe.scrolling = 'no';
-    iframe.frameBorder = 0;
-    iframe.marginWidth = 0;
-    iframe.marginHeight = 0;
-    iframe.width = '400px';
-    iframe.height = '320px';
-
-    if(me.hasAttribute('data-width'))
-        iframe.width = me.getAttribute('data-width');
-    if(me.hasAttribute('data-height'))
-        iframe.height = me.getAttribute('data-height');
-
-    me.parentElement.insertBefore(iframe, me);
-
-    const content = (function(){/*
+(()=>{var e=document.currentScript,t=document.createElement("iframe");t.scrolling="no";t.frameBorder="0";t.marginWidth="0";t.marginHeight="0";t.width="400px";t.height="320px";e.hasAttribute("data-width")&&(t.width=e.getAttribute("data-width"));e.hasAttribute("data-height")&&(t.height=e.getAttribute("data-height"));e.parentElement.insertBefore(t,e);var a=`
 <!DOCTYPE html>
 <html lang="ja">
 <head>
@@ -40,10 +20,9 @@
       padding: 4px 15px;
     }
   </style>
-  <script src="./dist/browser.dist.js"></script>
-  <script>
-    window.json_url = %JSON_URL%;
-  </script>
+  <script async>
+    window.json_url = ${JSON.stringify(e.getAttribute("data-url"))};
+  <\/script>
 </head>
 <body style="height: 100vh;">
   <div class="container-fluid" style="height: 100%;">
@@ -68,13 +47,7 @@
       </div>
     </div>
   </div>
-  <script src="./browser-ui.js"></script>
-  <script src="./widget-main.js"></script>
+  <script async src="../dist/widget.js"><\/script>
 </body>
-</html>*/}).toString().replace(/(\n)/g, '').split('/*')[1].split('*/')[0].replace(/%JSON_URL%/, JSON.stringify(me.getAttribute('data-url')));
-
-    const doc = iframe.contentWindow.document;
-    doc.open();
-    doc.write(content);
-    doc.close();
-})();
+</html>`,i=t.contentWindow.document;i.open();i.write(a);i.close();})();
+//# sourceMappingURL=embed.js.map

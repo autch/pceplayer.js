@@ -1,6 +1,7 @@
 'use strict';
 
-const inst = require('../inst.js');
+import {inst, createInst} from "../inst.js";
+
 const wdi_SDGATE = [
     0, 1, 0, 1, 0, 1, 0, 1,
     0, 1, -1, 1, -1, 1, -1, 1,
@@ -732,14 +733,12 @@ const wdi_SDGATE = [
     0, 0, 0, 0, 0, 0, 0,
 ];
 
-exports.i_SDGATE =
-    inst.createInst(
+export default createInst(        0,
         0,
         0,
         0,
-        0,
-        inst.inst.PITCH16K,
-        inst.inst.PITCH_C4,
+        inst.PITCH16K,
+        inst.PITCH_C4,
         new Int8Array(wdi_SDGATE),
         0,
         5823 << 14

@@ -5,7 +5,8 @@ pmd/*.pmd
 .LSOverride
 
 # Icon must end with two \r
-Icon
+Icon
+
 
 # Thumbnails
 ._*
@@ -26,5 +27,6 @@ Temporary Items
 .apdisk
 
 list.json
+list.*.json
 
 node_modules/

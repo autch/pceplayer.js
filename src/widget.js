@@ -1,5 +1,3 @@
-'use strict';
-
 import MuslibUI from './browser-ui.js';
 
 const m = /\bm=(.*?)(&|$)/.exec(window.location.search);
@@ -7,7 +5,7 @@ let f = m && m[1];
 
 MuslibUI.ready(function () {
     const xhr = new XMLHttpRequest();
-    xhr.open('GET', './list.json', true);
+    xhr.open('GET', window.json_url, true);
     xhr.onload = function (/*pe*/) {
         if (this.status < 200 || this.status >= 400) {
             // error
@@ -20,14 +18,14 @@ MuslibUI.ready(function () {
         for (let i = 0; i < data.length; i++) {
             const item = data[i];
 
-            const a = `<a href="#" class="row list-group-item" data-href="${item.href}" data-filename="${item.filename}" data-title="${item.title}" data-title2="${item.title2}">`;
-            const title = `<div class="col-xs-12 col-sm-7"><h5 class="list-group-item-heading">${item.title === "" ? "[" + item.filename + "]" : item.title}</h5></div>`;
-            const title2 = `<div class="col-xs-12 col-sm-5"><small class="list-group-item-text">${item.title2}</small></div>`;
-
-            target.innerHTML += `${a}${title}${title2}</a>`;
+            const a = `<a href="#" class="list-group-item" data-href="${item.href}" data-filename="${item.filename}" data-title="${item.title}" data-title2="${item.title2}">`;
+            const h5 = `<h5 class="list-group-item-heading">${item.title === "" ? "[" + item.filename + "]" : item.title}</h5>`;
+            const small = `<small class="list-group-item-text">${item.title2}</small>`;
+            const tr_html = `${a}${h5}${small}</a>`;
+            target.innerHTML += tr_html;
 
             if (f === item.filename) {
-                // MuslibUI.autoplay(tr);
+                //MuslibUI.autoplay(tr);
                 f = null;
             }
         }
@@ -37,4 +35,3 @@ MuslibUI.ready(function () {
     };
     xhr.send();
 });
-

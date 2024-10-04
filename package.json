@@ -2,11 +2,11 @@
   "name": "pceplayer.js",
   "version": "1.0.0",
   "description": "pceplayer.js ============",
-  "main": "main.js",
+  "main": "src/browser.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "webpack": "webpack-cli",
-    "gen_list": "node ./gen_list.js"
+    "gen_list": "node ./gen_list.js",
+    "eb-dev": "esbuild --bundle --outdir=dist --minify --sourcemap --external:iconv-lite src/browser.js src/widget.js src/embed.js"
   },
   "repository": {
     "type": "git",
@@ -19,8 +19,10 @@
   },
   "homepage": "https://github.com/autch/pceplayer.js#readme",
   "devDependencies": {
-    "webpack": "^4.6.0",
-    "webpack-cli": "^2.1.2"
+    "@eslint/js": "^9.11.1",
+    "esbuild": "0.24.0",
+    "eslint": "^9.11.1",
+    "globals": "^15.10.0"
   },
   "dependencies": {
     "iconv-lite": "^0.4.21"

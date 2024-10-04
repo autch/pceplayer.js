@@ -1,5 +1,3 @@
-'use strict';
-
 const IT_LOOP = 0x10, IT_FAST = 0x80;
 const PITCH44K = 47396,
     PITCH22K = 44324,
@@ -13,7 +11,7 @@ const PITCH44K = 47396,
     PITCH16 = (PITCH2 * 4),
     PITCH32 = (PITCH2 * 5),
     PITCH34 = 15629;
-exports.inst = {
+export const inst = {
     IT_LOOP: IT_LOOP,
     IT_FAST: IT_FAST,
     PITCH44K: PITCH44K,
@@ -30,22 +28,23 @@ exports.inst = {
     PITCH34: PITCH34
 };
 
-function Inst(wtype, param, resv1, resv2, pitch_fs, pitch_org, data, loop_top, loop_end) {
-    this.wtype = wtype;
-    this.param = param;
-    this.resv1 = resv1;
-    this.resv2 = resv2;
-    this.pitch_fs = pitch_fs;
-    this.pitch_org = pitch_org;
-    this.data = data;
-    this.loop_top = loop_top;
-    this.loop_end = loop_end;
+class Inst {
+    constructor(wtype, param, resv1, resv2, pitch_fs, pitch_org, data, loop_top, loop_end) {
+        this.wtype = wtype;
+        this.param = param;
+        this.resv1 = resv1;
+        this.resv2 = resv2;
+        this.pitch_fs = pitch_fs;
+        this.pitch_org = pitch_org;
+        this.data = data;
+        this.loop_top = loop_top;
+        this.loop_end = loop_end;
+    }
 }
 
-function createInst(wtype, param, resv1, resv2, pitch_fs, pitch_org, data, loop_top, loop_end) {
+export function createInst(wtype, param, resv1, resv2, pitch_fs, pitch_org, data, loop_top, loop_end) {
     return new Inst(wtype, param, resv1, resv2, pitch_fs, pitch_org, data, loop_top, loop_end);
 }
-exports.createInst = createInst;
 
 const instWave = {
     square: [
@@ -73,7 +72,7 @@ const instWave = {
     ]
 };
 
-exports.presetInst = {
+export const presetInst = {
     i_square0: createInst(IT_FAST, 0, 0, 0, PITCH16K, PITCH16K - PITCH4, null, 0, 4 << 14),
     i_saw0: createInst(IT_FAST, 1, 0, 0, PITCH16K, PITCH16K - PITCH4, null, 0, 4 << 14),
     i_triangle0: createInst(IT_FAST, 2, 0, 0, PITCH16K, PITCH16K - PITCH4, null, 0, 4 << 14),
@@ -81,4 +80,3 @@ exports.presetInst = {
     i_saw: createInst(IT_LOOP, 0, 0, 0, PITCH16K, PITCH16K - PITCH16, new Int8Array(instWave.saw), 0, 16 << 14),
     i_triangle: createInst(IT_LOOP, 0, 0, 0, PITCH16K, PITCH16K - PITCH16, new Int8Array(instWave.triangle), 0, 16 << 14)
 };
-exports.Inst = Inst;

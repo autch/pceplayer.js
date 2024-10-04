@@ -1,6 +1,7 @@
 'use strict';
 
-const inst = require('../inst.js');
+import {inst, createInst} from "../inst.js";
+
 const wdi_TOMM1 = [
     0, 1, 0, 1, 0, 1, 0, 1,
     -1, 1, -1, 1, -1, 1, -1, 1,
@@ -394,14 +395,12 @@ const wdi_TOMM1 = [
     -96, -76, -82, -75,
 ];
 
-exports.i_TOMM1 =
-    inst.createInst(
+export default createInst(        0,
         0,
         0,
         0,
-        0,
-        inst.inst.PITCH16K,
-        inst.inst.PITCH_C4,
+        inst.PITCH16K,
+        inst.PITCH_C4,
         new Int8Array(wdi_TOMM1),
         0,
         /* http://www.piece-me.org/piece-lab/piece-lab-2017.txt
