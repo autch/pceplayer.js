@@ -5,8 +5,8 @@ import Seq from "./seq.js";
 
 export default class Muslib {
     constructor(fs) {
-        this.mus = new Mus(fs, 6);
-        this.seq = new Seq(fs, 6);
+        this.mus = new Mus(fs, 32);
+        this.seq = new Seq(fs, 32);
     }
 
     PlayMusic(seq) {
