@@ -6,7 +6,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "gen_list": "node ./gen_list.js",
-    "eb-dev": "esbuild --bundle --outdir=dist --minify --sourcemap --external:iconv-lite src/browser.js src/widget.js src/embed.js"
+    "eb-dev": "esbuild --bundle --outdir=dist --minify --sourcemap --external:iconv-lite src/browser.js src/widget.js src/embed.js src/player-card.js"
   },
   "repository": {
     "type": "git",

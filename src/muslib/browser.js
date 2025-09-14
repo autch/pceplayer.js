@@ -70,42 +70,37 @@ export default class MuslibBrowserInterface {
         }
     }
 
-    doLoadMusic(promise) {
+    doLoadMusic(data) {
         const muslib = new muslibMod(44100);
 
         this.instances = {
             muslib: muslib,
         };
 
-        promise.then(data => muslib.PlayMusic(data)).catch((/*error*/) => {
-        });
+        muslib.PlayMusic(data);
 
         return muslib;
     }
 
     loadMusicFromData(data) {
-        return this.doLoadMusic(new Promise((resolve, /*reject*/) => {
-            resolve(data);
-        }));
+        return this.doLoadMusic(data);
     }
 
     download(href) {
-        return new Promise((resolve, reject) => {
-            const request = new XMLHttpRequest();
-            request.open('GET', href, true);
-            request.responseType = 'arraybuffer';
-            request.addEventListener('load', (/*pe*/) => {
-                resolve(new Uint8Array(request.response));
-            });
-            request.addEventListener('error', (pe) => {
-                reject(pe);
-            });
-            request.send();
-        });
+        return fetch(href)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.arrayBuffer();
+            })
+            .then(buffer => new Uint8Array(buffer));
     }
 
-    loadMusicFromURL(href) {
-        return this.doLoadMusic(this.download(href));
+    loadMusicFromURL(href, cb) {
+        this.download(href).then(data => {
+            return this.doLoadMusic(data);
+        }).then(muslib => cb(muslib));    
     }
 
     doPlayMusic(promise, callback) {
