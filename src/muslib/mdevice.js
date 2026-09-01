@@ -18,7 +18,9 @@ export default class MDevice {
         this.VOLS = 1;
         this.ENVSTART = (-4 * 12 * 256) << this.VOLS;
         this.ENVSTOP = (-10 * 12 * 256) << this.VOLS;
-        this.ENVRR = 4000 << this.VOLS;
+        // 16kHz (P/ECE 実機) を基準に、128 サンプルごとの更新回数の違いを補正する。
+        // 丸めるとレートが高いほど分解能が落ちるので端数は残す。
+        this.ENVRR = (4000 << this.VOLS) * 16000.0 / this.FS2;
         this.T1CONST = 0x4000;
 
         this.IT_LOOP = 0x10;
@@ -118,7 +120,7 @@ export default class MDevice {
     }
 
     setEnvSpeed2(n) {
-        return Math.floor(this.setEnvSpeed(n) * 16000.0 / this.FS2);
+        return this.setEnvSpeed(n) * 16000.0 / this.FS2;
     }
 
     genEnvR() {
@@ -167,7 +169,7 @@ export default class MDevice {
     }
 
     setVibSpeed2(n) {
-        return Math.floor(this.setVibSpeed(n) * 16000.0 / this.FS2);
+        return this.setVibSpeed(n) * 16000.0 / this.FS2;
     }
 
     genVibS2() {
