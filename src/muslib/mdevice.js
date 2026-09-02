@@ -282,6 +282,10 @@ export default class MDevice {
             this.genenv.call(this);
             let vv = (this.pvol + this.pexp + this.envwk) >> this.VOLS;
             if (vv <= 11) vv = 0; else vv = gexp(vv);
+            // gexp() は元々テーブルの都合で 65535 止まりで、波形生成側の
+            // d1 * vv >> 8 と Int16Array への格納がその範囲で釣り合っていた。
+            // テーブルあふれ修正でこの頭打ちが外れたので明示的に抑える。
+            if (vv > 65535) vv = 65535;
             this.genwave.call(this, buffer, vv, buffer.length);
         }
     }
