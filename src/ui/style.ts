@@ -46,26 +46,3 @@ export const tokens = /* css */ `
     button { font: inherit; color: inherit; }
     :focus-visible { outline: 2px solid var(--pce-focus); outline-offset: 2px; }
 `;
-
-/** 再生 / 停止ボタン (本体の A ボタンをイメージした丸いボタン) */
-export const playButton = /* css */ `
-    .play {
-        display: inline-flex;
-        align-items: center;
-        gap: 0.5em;
-        padding: 0.45em 1.1em 0.45em 0.8em;
-        border: 1px solid #000;
-        border-radius: 999px;
-        background: var(--pce-body);
-        color: var(--pce-silver);
-        font-weight: 700;
-        cursor: pointer;
-    }
-    .play:hover { background: #26282b; }
-    .play:active { transform: translateY(1px); }
-    .play:disabled { opacity: 0.5; cursor: default; }
-    .play svg { width: 1em; height: 1em; fill: currentColor; }
-`;
-
-export const ICON_PLAY = '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M4 2.5v11l9-5.5z"/></svg>';
-export const ICON_STOP = '<svg viewBox="0 0 16 16" aria-hidden="true"><rect x="3.5" y="3.5" width="9" height="9"/></svg>';

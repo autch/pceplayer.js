@@ -17,6 +17,14 @@ const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)');
 // ?fps を付けると、液晶に描画と波形データの更新の頻度を出す (端末ごとの見え方を調べるため)
 const SHOW_FPS = new URLSearchParams(location.search).has('fps');
 
+// ?fps のときは、OS の再生コントロールから届いた操作も出す
+let lastMediaAction = '';
+if (SHOW_FPS) {
+    PmdPlayer.shared.addEventListener('mediaaction', (e) => {
+        lastMediaAction = `${(e as CustomEvent<string>).detail} (${new Date().toLocaleTimeString()})`;
+    });
+}
+
 const template = /* html */ `
 <style>
     ${tokens}
@@ -123,7 +131,8 @@ export class PmdLcd extends HTMLElement {
         if (run && !this.#active) this.#raf = requestAnimationFrame(() => this.#frame());
         if (!run) {
             cancelAnimationFrame(this.#raf);
-            this.#drawFlat();
+            // 一時停止中は最後の波形を残す
+            if (!(active && state === 'paused')) this.#drawFlat();
         }
         this.#active = run;
     }
@@ -185,7 +194,8 @@ export class PmdLcd extends HTMLElement {
             const sec = (now - f.last) / 1000;
             const { base, output } = PmdPlayer.shared.latency;
             f.text = `描画 ${Math.round(f.frames / sec)}fps / 波形 ${Math.round(f.updates / sec)}回/秒 / ` +
-                `base ${Math.round(base * 1000)}ms out ${Math.round(output * 1000)}ms`;
+                `base ${Math.round(base * 1000)}ms out ${Math.round(output * 1000)}ms` +
+                (lastMediaAction ? ` / OS: ${lastMediaAction}` : '');
             this.#status.textContent = f.text;
             this.#status.hidden = false;
             f.frames = f.updates = 0;

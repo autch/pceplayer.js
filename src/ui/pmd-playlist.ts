@@ -11,7 +11,8 @@
 
 import { PmdPlayer } from '../audio/player.ts';
 import faceUrl from '../assets/pme001.png';
-import { ensureFonts, ICON_PLAY, ICON_STOP, playButton, tokens } from './style.ts';
+import { ensureFonts, tokens } from './style.ts';
+import { Controls, controlsHtml, controlsStyle } from './controls.ts';
 import './pmd-lcd.ts';
 import type { PmdLcd } from './pmd-lcd.ts';
 
@@ -30,7 +31,7 @@ interface Track extends ListItem {
 const template = /* html */ `
 <style>
     ${tokens}
-    ${playButton}
+    ${controlsStyle}
     :host {
         display: block;
         height: 100%;
@@ -68,22 +69,18 @@ const template = /* html */ `
         width: 83.2%;
         height: 59.4%;
     }
-    .device .controls {
-        display: flex;
-        justify-content: center;
-        margin-top: 1.25rem;
-    }
+    .device .controls { margin-top: 1.25rem; }
     :host([layout="full"]) .strip { display: none; }
 
     /* ---- 液晶の帯 (compact) ---- */
     .strip {
         display: grid;
-        grid-template-columns: 1fr auto;
-        align-items: center;
-        gap: 0.75rem;
+        gap: 0.6rem;
         padding: 0.6rem;
         background: var(--pce-body);
+        --pce-controls-text: var(--pce-silver);
     }
+    .strip .controls { justify-content: flex-end; }
     :host(:not([layout="full"])) .wrap { grid-template-rows: auto minmax(0, 1fr); }
     .strip pmd-lcd { min-height: 6.5em; }
 
@@ -153,11 +150,11 @@ const template = /* html */ `
 <div class="wrap">
     <div class="device">
         <div class="face"><pmd-lcd transparent></pmd-lcd></div>
-        <div class="controls"><button class="play" type="button"></button></div>
+        ${controlsHtml}
     </div>
     <div class="strip">
         <pmd-lcd></pmd-lcd>
-        <button class="play" type="button"></button>
+        ${controlsHtml}
     </div>
     <ul class="list" aria-label="曲の一覧"></ul>
 </div>
@@ -173,7 +170,9 @@ export class PmdPlaylistElement extends HTMLElement {
     #error = '';
     #requested = false;
     #lcds: PmdLcd[];
-    #buttons: HTMLButtonElement[];
+    #controls: Controls;
+    #navRegistered = false;
+    #nav = { previous: () => this.#step(-1), next: () => this.#step(1) };
     #list: HTMLUListElement;
     #rows = new Map<string, HTMLButtonElement>();
 
@@ -195,9 +194,8 @@ export class PmdPlaylistElement extends HTMLElement {
         root.innerHTML = template;
         root.querySelector<HTMLElement>('.face')!.style.backgroundImage = `url("${faceUrl}")`;
         this.#lcds = [...root.querySelectorAll<PmdLcd>('pmd-lcd')];
-        this.#buttons = [...root.querySelectorAll<HTMLButtonElement>('.play')];
+        this.#controls = new Controls(root, { play: () => this.#playSelected() });
         this.#list = root.querySelector('.list')!;
-        for (const b of this.#buttons) b.addEventListener('click', () => this.#toggle());
         this.#list.addEventListener('click', (e) => {
             const row = (e.target as Element).closest<HTMLButtonElement>('.row');
             const track = row && this.#tracks.find((t) => t.url === row.dataset.url);
@@ -209,10 +207,14 @@ export class PmdPlaylistElement extends HTMLElement {
         ensureFonts();
         this.#player.addEventListener('change', this.#onChange);
         this.#player.addEventListener('error', this.#onError);
+        this.#controls.connect();
         this.#render();
     }
 
     disconnectedCallback() {
+        this.#controls.disconnect();
+        this.#player.setTrackNavigation(this, null);
+        this.#navRegistered = false;
         this.#player.removeEventListener('change', this.#onChange);
         this.#player.removeEventListener('error', this.#onError);
     }
@@ -259,14 +261,20 @@ export class PmdPlaylistElement extends HTMLElement {
         this.dispatchEvent(new CustomEvent('select', { detail: { filename: track.filename } }));
     }
 
-    #toggle() {
-        const now = this.#player.nowPlaying;
-        if (now && this.#tracks.some((t) => t.url === now.url)) {
-            this.#player.stop();
-            return;
-        }
+    #playSelected() {
         const track = this.#selected ?? this.#tracks[0];
         if (track) this.#play(track);
+    }
+
+    /** 演奏中 (なければ選択中) の曲から delta だけ前後の曲を鳴らす。端では反対側に回る */
+    #step(delta: number) {
+        if (!this.#tracks.length) return;
+        const url = this.#player.nowPlaying?.url ?? this.#selected?.url;
+        const i = this.#tracks.findIndex((t) => t.url === url);
+        const n = this.#tracks.length;
+        const track = this.#tracks[((i < 0 ? 0 : i + delta) % n + n) % n];
+        this.#play(track);
+        this.#rows.get(track.url)?.scrollIntoView({ block: 'nearest' });
     }
 
     #build() {
@@ -314,12 +322,15 @@ export class PmdPlaylistElement extends HTMLElement {
 
         const title = (mine && now!.title) || current?.title || (current ? `[${current.filename}]` : '曲を選んでください');
         const title2 = (mine && now!.title2) || current?.title2 || '';
-        const status = this.#error || (state === 'loading' ? '読み込み中…' : '');
+        const status = this.#error || (state === 'loading' ? '読み込み中…' : state === 'paused' ? '一時停止中' : '');
         for (const lcd of this.#lcds) lcd.show({ title, title2, status }, state, mine);
+        this.#controls.update(state, mine, this.#tracks.length > 0);
 
-        for (const b of this.#buttons) {
-            b.disabled = this.#tracks.length === 0;
-            b.innerHTML = mine ? `${ICON_STOP}<span>停止</span>` : `${ICON_PLAY}<span>再生</span>`;
+        // OS の「前の曲」「次の曲」は、この一覧の曲を演奏しているあいだだけ受け持つ
+        const nav = mine && this.#tracks.length > 1;
+        if (nav !== this.#navRegistered) {
+            this.#player.setTrackNavigation(this, nav ? this.#nav : null);
+            this.#navRegistered = nav;
         }
     }
 }

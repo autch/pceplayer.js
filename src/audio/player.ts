@@ -10,6 +10,7 @@ import wasmUrl from '../../vendor/muslib/muslib.wasm?url';
 import processorUrl from './processor.ts?worker&url';
 import { PROCESSOR_NAME, type FromProcessor, type ProcessorOptions, type ToProcessor } from './messages.ts';
 import { decodeTitle, parsePmd } from '../pmd.ts';
+import { bindMediaSession } from './media-session.ts';
 
 // 出力レートを固定して、どの端末でも同じ PCM になるようにする (ブラウザが再サンプリングする)
 const SAMPLE_RATE = 48000;
@@ -17,7 +18,24 @@ const SAMPLE_RATE = 48000;
 // 波形表示用に、合成した波形を最近の約 1.4 秒分 (48kHz で) ためておく
 const RING_SIZE = 1 << 16;
 
-export type PlayerState = 'stopped' | 'loading' | 'playing';
+export type PlayerState = 'stopped' | 'loading' | 'playing' | 'paused';
+
+/** 一覧の前後の曲への移動 (OS の「前の曲」「次の曲」に使う) */
+export interface TrackNavigation {
+    previous(): void;
+    next(): void;
+}
+
+const VOLUME_KEY = 'pceplayer.volume';
+
+function loadVolume(): number {
+    try {
+        const v = Number(localStorage.getItem(VOLUME_KEY));
+        return localStorage.getItem(VOLUME_KEY) !== null && v >= 0 && v <= 1 ? v : 0.8;
+    } catch {
+        return 0.8;
+    }
+}
 
 export interface NowPlaying {
     url: string;
@@ -37,6 +55,9 @@ export class PmdPlayer extends EventTarget {
 
     #ctx: AudioContext | null = null;
     #node: Promise<AudioWorkletNode> | null = null;
+    #gain: GainNode | null = null;
+    #volume = loadVolume();
+    #nav: { owner: object; nav: TrackNavigation } | null = null;
     #ring = new Float32Array(RING_SIZE);
     #ringEnd = 0;     // #ring に入っている最後のサンプルの次のフレーム番号。0 ならデータなし
     #state: PlayerState = 'stopped';
@@ -44,8 +65,48 @@ export class PmdPlayer extends EventTarget {
     #id = 0;
     #cache = new Map<string, Uint8Array>();
 
+    constructor() {
+        super();
+        bindMediaSession(this);
+    }
+
     get state(): PlayerState {
         return this.#state;
+    }
+
+    /** 音量 (0〜1)。ページをまたいで覚えておく。変わると 'volumechange' を出す */
+    get volume(): number {
+        return this.#volume;
+    }
+
+    set volume(v: number) {
+        v = Math.min(1, Math.max(0, v));
+        if (v === this.#volume) return;
+        this.#volume = v;
+        this.#applyVolume();
+        try {
+            localStorage.setItem(VOLUME_KEY, String(v));
+        } catch {
+            // 保存できなくても、このページの中では効く
+        }
+        this.dispatchEvent(new Event('volumechange'));
+    }
+
+    #applyVolume() {
+        // 耳の感じ方に合わせて 2 乗で効かせる
+        if (this.#gain) this.#gain.gain.value = this.#volume * this.#volume;
+    }
+
+    /** 前後の曲への移動。一覧の部品が、自分の曲を演奏しているあいだだけ登録する */
+    get trackNavigation(): TrackNavigation | null {
+        return this.#nav?.nav ?? null;
+    }
+
+    setTrackNavigation(owner: object, nav: TrackNavigation | null) {
+        if (nav) this.#nav = { owner, nav };
+        else if (this.#nav?.owner === owner) this.#nav = null;
+        else return;
+        this.dispatchEvent(new Event('navigationchange'));
     }
 
     /** 演奏中 (または読み込み中) の曲。停止中は null */
@@ -105,6 +166,17 @@ export class PmdPlayer extends EventTarget {
             } catch {
                 this.#ctx = new AudioContext({ latencyHint: 'playback' });
             }
+            // 電話の着信や、OS の一時停止ボタン (Media Session を使わない場合) などで
+            // OS が止めたり再開したりしたときに、状態を合わせる
+            const ctx = this.#ctx;
+            ctx.addEventListener('statechange', () => {
+                const s = ctx.state as string;
+                if ((s === 'suspended' || s === 'interrupted') && this.#state === 'playing') {
+                    this.#set('paused', this.#now);
+                } else if (s === 'running' && this.#state === 'paused') {
+                    this.#set('playing', this.#now);
+                }
+            });
         }
         return this.#ctx;
     }
@@ -124,7 +196,9 @@ export class PmdPlayer extends EventTarget {
             processorOptions: { module } satisfies ProcessorOptions,
         });
         node.port.onmessage = (e: MessageEvent<FromProcessor>) => this.#onMessage(e.data);
-        node.connect(ctx.destination);
+        this.#gain = new GainNode(ctx);
+        this.#applyVolume();
+        node.connect(this.#gain).connect(ctx.destination);
         return node;
     }
 
@@ -228,9 +302,25 @@ export class PmdPlayer extends EventTarget {
         }
     }
 
+    /** 一時停止する。合成もその場で止まり、resume() で続きから鳴る */
+    pause(): void {
+        if (this.#state !== 'playing' || !this.#ctx) return;
+        this.#set('paused', this.#now);
+        void this.#ctx.suspend();
+    }
+
+    /** 一時停止から再開する */
+    resume(): void {
+        if (this.#state !== 'paused' || !this.#ctx) return;
+        this.#set('playing', this.#now);
+        void this.#ctx.resume();
+    }
+
     stop(): void {
         this.#id++;
         void this.#node?.then((node) => node.port.postMessage({ type: 'stop' } satisfies ToProcessor));
+        // 一時停止中に止めたときは、次の曲のために AudioContext を動かしておく
+        if (this.#ctx && this.#ctx.state !== 'running') void this.#ctx.resume();
         this.#set('stopped', null);
     }
 }

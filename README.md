@@ -148,7 +148,18 @@ npm run update-muslib
   合成した波形はフレーム番号を付けてメインスレッドへ送り、液晶の波形表示は出力のタイムスタンプで
   いま聞こえている位置に合わせる (Android では出力側がまとめて合成させるので、AnalyserNode だと
   カクつき、音より 0.2 秒ほど先を表示してしまう)
-- `src/ui/` — Custom Elements (`<pmd-playlist>`, `<pmd-player>`, `<pmd-lcd>`)
+- `src/audio/media-session.ts` — Media Session API で OS の再生コントロールとつなぐ (曲名・画像の表示、再生 / 一時停止 / 停止 / 前後の曲)
+- `src/ui/` — Custom Elements (`<pmd-playlist>`, `<pmd-player>`, `<pmd-lcd>`) と、共通の操作部 (`controls.ts`: 再生 / 一時停止、停止、音量)
+
+### OS の再生コントロールについて (2026 年 10 月に確かめたこと)
+
+音は Web Audio だけで鳴らしている。
+
+- iOS: Dynamic Island とロック画面に曲名と画像が出る。一時停止 / 再開は OS が AudioContext を止める・動かすのを
+  `statechange` で拾ってページの表示を合わせている。前後の曲の操作はページに届かない
+- 出力を `<audio>` 要素に通す方式も試した。MediaStream を流す方式は iOS で前後の曲が届くが Dynamic Island に出ず、
+  Android ではピッチが狂う。無音の `<audio>` をループさせる方式は iOS で前後の曲が届くが Dynamic Island に出ない。
+  どちらも Android (Xperia 5 IV、Redmi Pad) では再生コントロール自体が出なかった。得るものが少ないので採らなかった
 - `src/pmd.ts` — pmd のヘッダ解析とタイトルの文字コード変換 (AudioWorklet では TextDecoder が使えないためメインスレッドで行う)
 - `tools/gen-list.ts` — list.json の生成
 - `lambda/handler.ts` — カードの Lambda

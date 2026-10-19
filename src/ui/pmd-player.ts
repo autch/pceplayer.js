@@ -6,14 +6,15 @@
 import { PmdPlayer } from '../audio/player.ts';
 import { decodeTitle, parsePmd } from '../pmd.ts';
 import logoUrl from '../assets/pme-logo.png';
-import { ensureFonts, ICON_PLAY, ICON_STOP, playButton, tokens } from './style.ts';
+import { ensureFonts, tokens } from './style.ts';
+import { Controls, controlsHtml, controlsStyle } from './controls.ts';
 import './pmd-lcd.ts';
 import type { PmdLcd } from './pmd-lcd.ts';
 
 const template = /* html */ `
 <style>
     ${tokens}
-    ${playButton}
+    ${controlsStyle}
     :host {
         display: block;
         height: 100%;
@@ -36,21 +37,19 @@ const template = /* html */ `
         min-height: 0;
     }
     .controls {
-        display: flex;
-        justify-content: center;
-        padding: 1em;
+        padding: 0.9em 0.75em;
+        --pce-controls-text: var(--pce-silver);
     }
-    .play {
+    .controls button {
         background: #2c2e32;
         border-color: #3a3d42;
     }
+    .controls input[type="range"] { width: 5.5em; }
 </style>
 <div class="body">
     <img class="logo" alt="P/ECE" width="222" height="125">
     <pmd-lcd></pmd-lcd>
-    <div class="controls">
-        <button class="play" type="button"></button>
-    </div>
+    ${controlsHtml}
 </div>
 `;
 
@@ -59,7 +58,7 @@ export class PmdPlayerElement extends HTMLElement {
 
     #player = PmdPlayer.shared;
     #lcd: PmdLcd;
-    #button: HTMLButtonElement;
+    #controls: Controls;
     #title = '';
     #title2 = '';
     #error = '';
@@ -82,8 +81,7 @@ export class PmdPlayerElement extends HTMLElement {
         root.innerHTML = template;
         root.querySelector<HTMLImageElement>('.logo')!.src = logoUrl;
         this.#lcd = root.querySelector('pmd-lcd')!;
-        this.#button = root.querySelector('.play')!;
-        this.#button.addEventListener('click', () => this.#toggle());
+        this.#controls = new Controls(root, { play: () => this.#play() });
     }
 
     get src(): string {
@@ -95,10 +93,12 @@ export class PmdPlayerElement extends HTMLElement {
         ensureFonts();
         this.#player.addEventListener('change', this.#onChange);
         this.#player.addEventListener('error', this.#onError);
+        this.#controls.connect();
         this.#render();
     }
 
     disconnectedCallback() {
+        this.#controls.disconnect();
         this.#player.removeEventListener('change', this.#onChange);
         this.#player.removeEventListener('error', this.#onError);
     }
@@ -130,14 +130,11 @@ export class PmdPlayerElement extends HTMLElement {
         }
     }
 
-    #toggle() {
-        if (this.#isMine()) {
-            this.#player.stop();
-        } else if (this.src) {
-            this.#error = '';
-            this.#requested = true;
-            void this.#player.play(this.src);
-        }
+    #play() {
+        if (!this.src) return;
+        this.#error = '';
+        this.#requested = true;
+        void this.#player.play(this.src);
     }
 
     #render() {
@@ -146,11 +143,9 @@ export class PmdPlayerElement extends HTMLElement {
         const now = mine ? this.#player.nowPlaying : null;
         const title = now?.title || this.#title || (this.src ? this.src.split('/').pop()! : '曲が指定されていません');
         const title2 = now?.title2 || this.#title2;
-        const status = this.#error || (state === 'loading' ? '読み込み中…' : '');
+        const status = this.#error || (state === 'loading' ? '読み込み中…' : state === 'paused' ? '一時停止中' : '');
         this.#lcd.show({ title, title2, status }, state, mine);
-
-        this.#button.disabled = !this.src;
-        this.#button.innerHTML = mine ? `${ICON_STOP}<span>停止</span>` : `${ICON_PLAY}<span>再生</span>`;
+        this.#controls.update(state, mine, !!this.src);
     }
 }
 
