@@ -15,7 +15,8 @@
     "gen-list": "node tools/gen-list.ts",
     "dev-data": "node scripts/dev-data.mjs",
     "update-muslib": "node scripts/update-muslib.mjs",
-    "build:lambda": "vite build --mode lambda && cd dist-lambda && rm -f lambda.zip && zip -q -X lambda.zip index.mjs"
+    "build:lambda": "vite build --mode lambda && cd dist-lambda && rm -f lambda.zip && zip -q -X lambda.zip index.mjs",
+    "deploy": "node scripts/deploy.mjs"
   },
   "engines": {
     "node": ">=24"

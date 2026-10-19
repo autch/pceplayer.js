@@ -80,6 +80,30 @@ API Gateway の Lambda プロキシ統合 (REST / HTTP API のどちらでも) �
 - `.js` は `text/javascript` で配信すること (モジュールスクリプトは MIME タイプを検査される)。`aws s3 sync` なら拡張子から自動で付く
 - `.wasm` は `ArrayBuffer` で読み込んでからコンパイルしているので、`application/wasm` でなくても動く
 
+## デプロイ
+
+`scripts/deploy.mjs` (`npm run deploy -- <target>`) で上げる。aws CLI の認証を使う。
+
+| target | 上げるもの | 置き場所 |
+|---|---|---|
+| `pceplayer` | `dist/` | `s3://pceplayer.tnok.jp/` |
+| `tnok-pmuslib` | `dist/` | `s3://tnok-jp/pmuslib/` |
+| `card` | `dist-card/` | `s3://pceplayer-card.tnok.jp/` |
+| `lambda` | `dist-lambda/lambda.zip` | Lambda `muslib_twitter_card` (ランタイムを `nodejs26.x`、タイムアウトを 5 秒にする) |
+
+```sh
+npm run deploy -- pceplayer --dry-run          # 実行するコマンドを表示するだけ
+npm run deploy -- pceplayer --prefix next/     # 試験配置 (https://pceplayer.tnok.jp/next/)
+npm run deploy -- pceplayer
+npm run deploy -- lambda --test                # 更新後に実際の pmd でカードを作らせて確かめる
+```
+
+- 未コミットの変更があると止まる (何から作ったか分からないものを出さないため)。ビルドは毎回やり直す
+- ハッシュ付きのファイル (`assets/`) → その他 → HTML の順に上げ、名前が変わらないものだけ CloudFront のキャッシュを無効化する。
+  古いファイルは消さないので、入れ替え中にキャッシュに残った古い HTML も動く
+- 曲データ (`list*.json`、`pmd*/`) と、埋め込みのあるページ (`pko.html` など) はここでは扱わない。各サイトの `upload.sh` で上げる
+  (`~/src/pceplayer.tnok.jp/upload.sh` は `site/` を、`~/src/tnok.jp/upload.sh` は `public/` を上げる。どちらも引数を `aws s3 sync` に渡すので `--dryrun` が使える)
+
 ## 開発
 
 ```sh
