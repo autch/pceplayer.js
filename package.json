@@ -1,30 +1,29 @@
 {
-  "name": "pceplayer.js",
-  "version": "1.0.0",
-  "description": "pceplayer.js ============",
-  "main": "src/browser.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "gen_list": "node ./gen_list.js",
-    "eb-dev": "esbuild --bundle --outdir=dist --minify --sourcemap --external:iconv-lite src/browser.js src/widget.js src/embed.js src/player-card.js"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/autch/pceplayer.js.git"
-  },
-  "author": "",
+  "name": "pceplayer",
+  "version": "2.0.0",
+  "description": "P/ECE 標準音楽ドライバのデータ (pmd) を Web ブラウザで再生する",
+  "private": true,
+  "type": "module",
   "license": "MIT",
-  "bugs": {
-    "url": "https://github.com/autch/pceplayer.js/issues"
+  "author": "Autch",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc -b && vite build && vite build --mode card",
+    "preview": "vite preview",
+    "test": "vitest run",
+    "typecheck": "tsc -b",
+    "gen-list": "node tools/gen-list.ts",
+    "dev-data": "node scripts/dev-data.mjs",
+    "update-muslib": "node scripts/update-muslib.mjs"
   },
-  "homepage": "https://github.com/autch/pceplayer.js#readme",
+  "engines": {
+    "node": ">=24"
+  },
   "devDependencies": {
-    "@eslint/js": "^9.11.1",
-    "esbuild": "0.24.0",
-    "eslint": "^9.11.1",
-    "globals": "^15.10.0"
-  },
-  "dependencies": {
-    "iconv-lite": "^0.4.21"
+    "@types/audioworklet": "^0.0.100",
+    "@types/node": "^26.6.5",
+    "typescript": "^7.0.2",
+    "vite": "^8.3.4",
+    "vitest": "^5.0.5"
   }
 }

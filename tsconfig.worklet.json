@@ -1,0 +1,18 @@
+{
+  "compilerOptions": {
+    "composite": true,
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "lib": ["ES2023"],
+    "types": ["audioworklet"],
+    "strict": true,
+    "erasableSyntaxOnly": true,
+    "allowImportingTsExtensions": true,
+    "verbatimModuleSyntax": true,
+    "skipLibCheck": true,
+    "emitDeclarationOnly": true,
+    "outDir": "node_modules/.tmp/worklet"
+  },
+  "include": ["src/audio/processor.ts", "src/audio/messages.ts", "vendor"]
+}

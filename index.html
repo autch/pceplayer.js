@@ -1,56 +1,78 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="ja">
-  <head>
+<head>
     <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
-    <title>muslib player</title>
-    <!-- Latest compiled and minified CSS -->
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
-
+    <link rel="icon" href="./favicon.svg" type="image/svg+xml">
+    <title>P/ECE 曲データプレイヤー</title>
+    <meta name="description" content="P/ECE の標準音楽ドライバ用の曲データ (pmd) をブラウザで再生します">
+    <meta name="color-scheme" content="light dark">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DotGothic16&family=M+PLUS+1p:wght@400;700&display=swap">
     <style>
-      body { padding-top: 70px; }
-      .title2 { font-size: 80%; }
-      a.list-group-item { padding: 8px 8px; }
+        :root {
+            --page: #d6d8dc;
+            --text: #22252a;
+            --muted: #5e636b;
+            --link: #2b5d9a;
+            color-scheme: light dark;
+        }
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --page: #2a2c30;
+                --text: #e4e5e8;
+                --muted: #a3a7ae;
+                --link: #8db8ec;
+            }
+        }
+        body {
+            margin: 0;
+            background: var(--page);
+            color: var(--text);
+            font-family: 'M PLUS 1p', system-ui, sans-serif;
+            line-height: 1.6;
+        }
+        main {
+            max-width: 1120px;
+            margin: 0 auto;
+            padding: clamp(1.25rem, 4vw, 3rem) 16px 2rem;
+        }
+        header { margin-bottom: clamp(1.5rem, 4vw, 2.5rem); }
+        h1 {
+            margin: 0;
+            font-size: clamp(1.5rem, 3.2vw, 2.1rem);
+            font-weight: 700;
+            letter-spacing: 0.02em;
+        }
+        header p {
+            margin: 0.4rem 0 0;
+            max-width: 40em;
+            color: var(--muted);
+        }
+        footer {
+            max-width: 1120px;
+            margin: 0 auto;
+            padding: 2rem 16px 3rem;
+            font-size: 0.85rem;
+            color: var(--muted);
+        }
+        footer p { margin: 0.3rem 0; max-width: 60em; }
+        a { color: var(--link); }
     </style>
-  </head>
-  <body>
-    <a href="https://github.com/autch/pceplayer.js"><img style="position: fixed; top: 0; right: 0; border: 0; z-index: 100000;" src="https://camo.githubusercontent.com/38ef81f8aca64bb9a64448d0d70f1308ef5341ab/68747470733a2f2f73332e616d617a6f6e6177732e636f6d2f6769746875622f726962626f6e732f666f726b6d655f72696768745f6461726b626c75655f3132313632312e706e67" alt="Fork me on GitHub" data-canonical-src="https://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png"></a>
-    <nav class="navbar navbar-default navbar-fixed-top">
-      <div class="container-fluid">
-        <!-- Brand and toggle get grouped for better mobile display -->
-        <div class="navbar-header">
-          <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1" aria-expanded="false">
-            <span class="sr-only">Toggle navigation</span>
-            <span class="icon-bar"></span>
-            <span class="icon-bar"></span>
-            <span class="icon-bar"></span>
-          </button>
-          <a class="navbar-brand" href="#">P/ECE PMD Web Player</a>
-        </div>
-
-        <!-- Collect the nav links, forms, and other content for toggling -->
-        <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
-          <ul class="nav navbar-nav">
-            <li><button id="btn-play" class="btn btn-default navbar-btn"><span class="glyphicon glyphicon-play"></span></button></li>
-            <li><p class="navbar-text"><a id="title" href="#" class="navbar-link"></a></p></li>
-            <!--li><p class="navbar-text"><a id="title2" href="#" class="navbar-link"></a></p></li-->
-          </ul>
-        </div><!-- /.navbar-collapse -->
-      </div><!-- /.container-fluid -->
-    </nav>
-
-    <div class="container">
-      <div id="file-list" class="list-group">
-      </div>
-    </div>
-
-    <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
-    <script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
-    <!-- Latest compiled and minified JavaScript -->
-    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js" integrity="sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS" crossorigin="anonymous"></script>
-
-    <script src="dist/browser.js"></script>
-  </body>
+    <script type="module" src="./src/main.ts"></script>
+</head>
+<body>
+    <main>
+        <header>
+            <h1>P/ECE 曲データプレイヤー</h1>
+            <p>P/ECE の標準音楽ドライバ用の曲データ (pmd) を、実機と同じ音源ドライバで再生します。一覧から曲を選んでください。</p>
+        </header>
+        <pmd-playlist src="./list.json" layout="full"></pmd-playlist>
+    </main>
+    <footer>
+        <p>音源ドライバは P/ECE 標準音楽ライブラリ muslib (Copyright (C)2001 AQUAPLUS Co., Ltd. / OeRSTED, Inc.) を改変したものです。アクアプラスはこのプログラムに関与しておらず、その内容と実行結果について責任を負いません。</p>
+        <p>曲データの著作権はそれぞれの作者にあります。</p>
+    </footer>
+</body>
 </html>
