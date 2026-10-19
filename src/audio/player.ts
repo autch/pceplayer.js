@@ -14,6 +14,9 @@ import { decodeTitle, parsePmd } from '../pmd.ts';
 // 出力レートを固定して、どの端末でも同じ PCM になるようにする (ブラウザが再サンプリングする)
 const SAMPLE_RATE = 48000;
 
+// 波形表示用に、合成した波形を最近の約 1.4 秒分 (48kHz で) ためておく
+const RING_SIZE = 1 << 16;
+
 export type PlayerState = 'stopped' | 'loading' | 'playing';
 
 export interface NowPlaying {
@@ -34,7 +37,8 @@ export class PmdPlayer extends EventTarget {
 
     #ctx: AudioContext | null = null;
     #node: Promise<AudioWorkletNode> | null = null;
-    #analyser: AnalyserNode | null = null;
+    #ring = new Float32Array(RING_SIZE);
+    #ringEnd = 0;     // #ring に入っている最後のサンプルの次のフレーム番号。0 ならデータなし
     #state: PlayerState = 'stopped';
     #now: NowPlaying | null = null;
     #id = 0;
@@ -49,9 +53,39 @@ export class PmdPlayer extends EventTarget {
         return this.#now;
     }
 
-    /** 出力波形を見るための AnalyserNode。一度も再生していなければ null */
-    get analyser(): AnalyserNode | null {
-        return this.#analyser;
+    /** オーディオのバッファによる遅延 (秒)。一度も再生していなければ 0 */
+    get latency(): { base: number; output: number } {
+        return { base: this.#ctx?.baseLatency ?? 0, output: this.#ctx?.outputLatency ?? 0 };
+    }
+
+    /**
+     * いまスピーカーから出ている位置までの波形を out に書く (out.length サンプル分)。
+     * 合成はオーディオ出力の都合でまとめて先に進むことがあるので、出力のタイムスタンプで
+     * 再生位置を求めて切り出す。波形がまだなければ false
+     */
+    waveform(out: Float32Array): boolean {
+        const ctx = this.#ctx;
+        if (!ctx || !this.#ringEnd) return false;
+        // getOutputTimestamp() の値はオーディオの処理のたびにしか更新されないので、
+        // 取得した時刻 (performanceTime) からの経過時間を足して今の再生位置を推定する
+        const ts = ctx.getOutputTimestamp?.();
+        const t = ts?.contextTime && ts.performanceTime
+            ? ts.contextTime + (performance.now() - ts.performanceTime) / 1000
+            : ctx.currentTime - (ctx.outputLatency || ctx.baseLatency || 0);
+        // 推定が合成済みの範囲を越えたら、届いている最後の位置で止める
+        const end = Math.min(Math.floor(t * ctx.sampleRate), this.#ringEnd);
+        const start = end - out.length;
+        const oldest = this.#ringEnd - RING_SIZE;
+        for (let i = 0; i < out.length; i++) {
+            const f = start + i;
+            out[i] = f >= 0 && f >= oldest && f < this.#ringEnd ? this.#ring[f & (RING_SIZE - 1)] : 0;
+        }
+        return true;
+    }
+
+    #storeWave(frame: number, samples: Float32Array) {
+        for (let i = 0; i < samples.length; i++) this.#ring[(frame + i) & (RING_SIZE - 1)] = samples[i];
+        this.#ringEnd = Math.max(this.#ringEnd, frame + samples.length);
     }
 
     #set(state: PlayerState, now: NowPlaying | null) {
@@ -90,22 +124,32 @@ export class PmdPlayer extends EventTarget {
             processorOptions: { module } satisfies ProcessorOptions,
         });
         node.port.onmessage = (e: MessageEvent<FromProcessor>) => this.#onMessage(e.data);
-
-        this.#analyser = new AnalyserNode(ctx, { fftSize: 2048 });
-        node.connect(this.#analyser).connect(ctx.destination);
+        node.connect(ctx.destination);
         return node;
     }
 
     #onMessage(msg: FromProcessor) {
         if (msg.id !== this.#id) return;   // 古い曲からの通知
         switch (msg.type) {
+            case 'wave':
+                this.#storeWave(msg.frame, msg.samples);
+                break;
             case 'started':
                 if (this.#now) this.#set('playing', this.#now);
                 break;
-            case 'ended':
-                this.#set('stopped', null);
-                this.dispatchEvent(new Event('ended'));
+            case 'ended': {
+                // 合成が終わっても、出力の遅延の分だけ音はまだ鳴っている (Android では 0.2 秒ほど)。
+                // 鳴り終わるまで待ってから停止の状態にする
+                const ctx = this.#ctx!;
+                const id = msg.id;
+                const delay = ((ctx.outputLatency || 0) + (ctx.baseLatency || 0)) * 1000;
+                setTimeout(() => {
+                    if (id !== this.#id) return;
+                    this.#set('stopped', null);
+                    this.dispatchEvent(new Event('ended'));
+                }, delay);
                 break;
+            }
             case 'error':
                 this.#fail(new PlayerError(msg.message));
                 break;
@@ -175,6 +219,8 @@ export class PmdPlayer extends EventTarget {
                 title: decodeTitle(header.title),
                 title2: decodeTitle(header.title2),
             });
+            this.#ring.fill(0);
+            this.#ringEnd = 0;
             node.port.postMessage({ type: 'play', id, pmd } satisfies ToProcessor);
         } catch (e) {
             if (id !== this.#id) return;

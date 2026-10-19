@@ -18,6 +18,7 @@ AudioWorklet の中で 48kHz で合成する。
 
 `index.html` と同じ場所に `list.json` と、そこから参照する pmd を置く。
 `?m=<ファイル名>` で、その曲を選んだ状態で開く (曲を選ぶと URL も変わるので、そのまま共有できる)。
+`?fps` を付けると、液晶に描画と波形の更新の頻度、オーディオの遅延 (`baseLatency` / `outputLatency`) を出す (端末ごとの見え方を調べるため)。
 
 ### カード
 
@@ -143,7 +144,10 @@ npm run update-muslib
 ## 構成
 
 - `src/audio/player.ts` — 再生の管理。ページ内で 1 つを共有し、同時に鳴らすのは 1 曲だけ
-- `src/audio/processor.ts` — AudioWorkletProcessor。wasm はメインスレッドでコンパイルして渡す
+- `src/audio/processor.ts` — AudioWorkletProcessor。wasm はメインスレッドでコンパイルして渡す。
+  合成した波形はフレーム番号を付けてメインスレッドへ送り、液晶の波形表示は出力のタイムスタンプで
+  いま聞こえている位置に合わせる (Android では出力側がまとめて合成させるので、AnalyserNode だと
+  カクつき、音より 0.2 秒ほど先を表示してしまう)
 - `src/ui/` — Custom Elements (`<pmd-playlist>`, `<pmd-player>`, `<pmd-lcd>`)
 - `src/pmd.ts` — pmd のヘッダ解析とタイトルの文字コード変換 (AudioWorklet では TextDecoder が使えないためメインスレッドで行う)
 - `tools/gen-list.ts` — list.json の生成

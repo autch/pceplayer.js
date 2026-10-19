@@ -9,11 +9,17 @@ import { PROCESSOR_NAME, type FromProcessor, type ProcessorOptions, type ToProce
 
 const BLOCK: number = Muslib.BLOCK_SAMPLES;
 
+// 波形表示のためにメインスレッドへ送る単位 (48kHz で約 10ms)
+const WAVE_CHUNK = 512;
+
 class PmdProcessor extends AudioWorkletProcessor {
     #muslib: Muslib;
     #block = new Int16Array(BLOCK);
     #pos = BLOCK;             // #block の未出力位置。BLOCK なら次を合成する
     #id = 0;                  // 演奏中の曲の番号。0 なら停止中
+    #wave = new Float32Array(WAVE_CHUNK);
+    #wavePos = 0;
+    #waveFrame = 0;
 
     constructor(options: { processorOptions?: unknown }) {
         super();
@@ -33,6 +39,7 @@ class PmdProcessor extends AudioWorkletProcessor {
                 if (this.#muslib.play(msg.pmd)) {
                     this.#id = msg.id;
                     this.#pos = BLOCK;
+                    this.#wavePos = 0;
                     this.#post({ type: 'started', id: msg.id });
                 } else {
                     this.#id = 0;
@@ -43,6 +50,20 @@ class PmdProcessor extends AudioWorkletProcessor {
                 this.#muslib.stop();
                 this.#id = 0;
                 break;
+        }
+    }
+
+    // 合成した波形を WAVE_CHUNK ずつメインスレッドへ送る。Android などでは出力側が
+    // 大きな単位でまとめて合成させるので、AnalyserNode では波形表示がカクつき、
+    // 聞こえている音ともずれる。フレーム番号を付けて送り、表示側で再生位置に合わせる
+    #pushWave(frame: number, v: number) {
+        if (this.#wavePos === 0) this.#waveFrame = frame;
+        this.#wave[this.#wavePos++] = v;
+        if (this.#wavePos === WAVE_CHUNK) {
+            const samples = this.#wave;
+            this.port.postMessage({ type: 'wave', id: this.#id, frame: this.#waveFrame, samples } satisfies FromProcessor, [samples.buffer]);
+            this.#wave = new Float32Array(WAVE_CHUNK);
+            this.#wavePos = 0;
         }
     }
 
@@ -61,7 +82,9 @@ class PmdProcessor extends AudioWorkletProcessor {
                 }
                 this.#pos = 0;
             }
-            out[i] = this.#block[this.#pos++] / 32768;
+            const v = this.#block[this.#pos++] / 32768;
+            out[i] = v;
+            this.#pushWave(currentFrame + i, v);
         }
         return true;
     }

@@ -12,6 +12,11 @@ import { tokens } from './style.ts';
 const SCOPE_W = 128;
 const SCOPE_H = 24;
 
+const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)');
+
+// ?fps を付けると、液晶に描画と波形データの更新の頻度を出す (端末ごとの見え方を調べるため)
+const SHOW_FPS = new URLSearchParams(location.search).has('fps');
+
 const template = /* html */ `
 <style>
     ${tokens}
@@ -79,6 +84,8 @@ export class PmdLcd extends HTMLElement {
     #raf = 0;
     #wave = new Float32Array(2048);
     #active = false;
+    #colors = { ink: '#1f2a24', mid: '#4f6559' };
+    #fps = { frames: 0, updates: 0, last: 0, prev: NaN, text: '' };
 
     constructor() {
         super();
@@ -92,6 +99,7 @@ export class PmdLcd extends HTMLElement {
     }
 
     connectedCallback() {
+        this.#updateColors();
         this.#drawFlat();
     }
 
@@ -108,6 +116,8 @@ export class PmdLcd extends HTMLElement {
         this.#title2.textContent = text.title2 ?? '';
         this.#status.textContent = text.status ?? '';
         this.#status.hidden = !text.status;
+        // getComputedStyle は重いので、毎フレームではなく表示を更新するときだけ色を取り直す
+        this.#updateColors();
 
         const run = active && state === 'playing';
         if (run && !this.#active) this.#raf = requestAnimationFrame(() => this.#frame());
@@ -118,9 +128,9 @@ export class PmdLcd extends HTMLElement {
         this.#active = run;
     }
 
-    #inkColors() {
+    #updateColors() {
         const cs = getComputedStyle(this);
-        return {
+        this.#colors = {
             ink: cs.getPropertyValue('--pce-ink').trim() || '#1f2a24',
             mid: cs.getPropertyValue('--pce-lcd-mid').trim() || '#4f6559',
         };
@@ -129,23 +139,26 @@ export class PmdLcd extends HTMLElement {
     #drawFlat() {
         const c = this.#ctx;
         c.clearRect(0, 0, SCOPE_W, SCOPE_H);
-        c.fillStyle = this.#inkColors().mid;
+        c.fillStyle = this.#colors.mid;
         for (let x = 0; x < SCOPE_W; x += 2) c.fillRect(x, SCOPE_H >> 1, 1, 1);
     }
 
     #frame() {
-        const analyser = PmdPlayer.shared.analyser;
-        if (!analyser || matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        if (reducedMotion.matches) {
             this.#drawFlat();
             return;
         }
-        analyser.getFloatTimeDomainData(this.#wave);
+        this.#raf = requestAnimationFrame(() => this.#frame());
+        if (!PmdPlayer.shared.waveform(this.#wave)) {
+            this.#drawFlat();     // 再生直後でまだ波形が届いていない
+            return;
+        }
+        if (SHOW_FPS) this.#countFps();
 
         // 2048 サンプルを 128 列に縮め、1 ドットの線でつなぐ
         const c = this.#ctx;
-        const { ink } = this.#inkColors();
         c.clearRect(0, 0, SCOPE_W, SCOPE_H);
-        c.fillStyle = ink;
+        c.fillStyle = this.#colors.ink;
         const step = this.#wave.length / SCOPE_W;
         const mid = (SCOPE_H - 1) / 2;
         let prev = -1;
@@ -157,7 +170,27 @@ export class PmdLcd extends HTMLElement {
             c.fillRect(x, top, 1, bottom - top + 1);
             prev = y;
         }
-        this.#raf = requestAnimationFrame(() => this.#frame());
+    }
+
+    #countFps() {
+        const f = this.#fps;
+        const now = performance.now();
+        f.frames++;
+        // 表示する波形が前のフレームから変わったか
+        const sig = this.#wave[0] + this.#wave[777] * 3 + this.#wave[1500] * 7;
+        if (sig !== f.prev) f.updates++;
+        f.prev = sig;
+        if (!f.last) f.last = now;
+        if (now - f.last >= 1000) {
+            const sec = (now - f.last) / 1000;
+            const { base, output } = PmdPlayer.shared.latency;
+            f.text = `描画 ${Math.round(f.frames / sec)}fps / 波形 ${Math.round(f.updates / sec)}回/秒 / ` +
+                `base ${Math.round(base * 1000)}ms out ${Math.round(output * 1000)}ms`;
+            this.#status.textContent = f.text;
+            this.#status.hidden = false;
+            f.frames = f.updates = 0;
+            f.last = now;
+        }
     }
 }
 
