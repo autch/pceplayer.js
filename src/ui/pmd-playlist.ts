@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 //
-// <pmd-playlist src="list.json" layout="full|compact" selected="xxx.pmd" encoding="shift_jis">
+// <pmd-playlist src="list.json" layout="full|compact" selected="xxx.pmd">
 //
 // 曲の一覧から選んで鳴らすプレイヤー。list.json は tools/gen-list.ts で作る
 // (旧 pceplayer.js と同じ形式: [{ href, filename, name, title, title2 }])。
@@ -205,10 +205,6 @@ export class PmdPlaylistElement extends HTMLElement {
         });
     }
 
-    get encoding(): string {
-        return this.getAttribute('encoding') || 'shift_jis';
-    }
-
     connectedCallback() {
         ensureFonts();
         this.#player.addEventListener('change', this.#onChange);
@@ -259,7 +255,7 @@ export class PmdPlaylistElement extends HTMLElement {
         this.#selected = track;
         this.#error = '';
         this.#requested = true;
-        void this.#player.play(track.url, this.encoding);
+        void this.#player.play(track.url);
         this.dispatchEvent(new CustomEvent('select', { detail: { filename: track.filename } }));
     }
 

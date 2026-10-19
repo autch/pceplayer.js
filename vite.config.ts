@@ -28,7 +28,8 @@ function devData(): Plugin {
 }
 
 // `vite build` で pceplayer.tnok.jp 向け (dist/)、
-// `vite build --mode card` で pceplayer-card.tnok.jp 向け (dist-card/) を作る。
+// `vite build --mode card` で pceplayer-card.tnok.jp 向け (dist-card/)、
+// `vite build --mode lambda` で muslib-card.tnok.jp の Lambda (dist-lambda/) を作る。
 // どちらも base を相対にして、置き場所を問わないようにしている。
 export default defineConfig(({ mode }) => {
     const common = {
@@ -40,6 +41,21 @@ export default defineConfig(({ mode }) => {
         preview: { allowedHosts: ['.trycloudflare.com'] },
         worker: { format: 'es' as const },
     };
+    if (mode === 'lambda') {
+        // muslib-card.tnok.jp の Lambda (Node.js 22 以降で動く)。依存なしの index.mjs 1 ファイルにする
+        return {
+            publicDir: false as const,
+            build: {
+                ssr: 'lambda/handler.ts',
+                outDir: 'dist-lambda',
+                emptyOutDir: true,
+                target: 'node22',
+                minify: false,
+                rollupOptions: { output: { format: 'es' as const, entryFileNames: 'index.mjs' } },
+            },
+            ssr: { noExternal: true },
+        };
+    }
     if (mode === 'card') {
         return {
             ...common,

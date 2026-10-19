@@ -15,5 +15,5 @@
     "emitDeclarationOnly": true,
     "outDir": "node_modules/.tmp/node"
   },
-  "include": ["tools", "test", "src/pmd.ts"]
+  "include": ["tools", "test", "lambda", "src/pmd.ts"]
 }

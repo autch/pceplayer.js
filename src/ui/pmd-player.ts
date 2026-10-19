@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 //
-// <pmd-player src="..." encoding="shift_jis">: 1 曲だけを鳴らすプレイヤー。
+// <pmd-player src="...">: 1 曲だけを鳴らすプレイヤー。
 // X (Twitter) の Player Card の iframe (320x340) に収まるように作ってある。
 
 import { PmdPlayer } from '../audio/player.ts';
@@ -55,7 +55,7 @@ const template = /* html */ `
 `;
 
 export class PmdPlayerElement extends HTMLElement {
-    static observedAttributes = ['src', 'encoding'];
+    static observedAttributes = ['src'];
 
     #player = PmdPlayer.shared;
     #lcd: PmdLcd;
@@ -91,10 +91,6 @@ export class PmdPlayerElement extends HTMLElement {
         return src ? new URL(src, document.baseURI).href : '';
     }
 
-    get encoding(): string {
-        return this.getAttribute('encoding') || 'shift_jis';
-    }
-
     connectedCallback() {
         ensureFonts();
         this.#player.addEventListener('change', this.#onChange);
@@ -126,8 +122,8 @@ export class PmdPlayerElement extends HTMLElement {
             if (!res.ok || src !== this.src) return;
             const header = parsePmd(new Uint8Array(await res.arrayBuffer()));
             if (!header) return;
-            this.#title = decodeTitle(header.title, this.encoding);
-            this.#title2 = decodeTitle(header.title2, this.encoding);
+            this.#title = decodeTitle(header.title);
+            this.#title2 = decodeTitle(header.title2);
             this.#render();
         } catch {
             // 再生ボタンを押したときに改めてエラーを出す
@@ -140,7 +136,7 @@ export class PmdPlayerElement extends HTMLElement {
         } else if (this.src) {
             this.#error = '';
             this.#requested = true;
-            void this.#player.play(this.src, this.encoding);
+            void this.#player.play(this.src);
         }
     }
 

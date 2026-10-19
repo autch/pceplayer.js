@@ -10,8 +10,9 @@ AudioWorklet の中で 48kHz で合成する。
 |---|---|---|
 | `dist/` (`vite build`) | `pceplayer.tnok.jp` | フル版 (`index.html`)、埋め込み用の `widget.js`、旧形式の埋め込み互換 `embed.js` |
 | `dist-card/` (`vite build --mode card`) | `pceplayer-card.tnok.jp` | X (Twitter) Player Card の中で動くプレイヤー (`player.html`) とサムネイル (`pme001.png`) |
+| `dist-lambda/lambda.zip` (`npm run build:lambda`) | `muslib-card.tnok.jp` の Lambda | Player Card 用の HTML を返す関数 (`index.mjs` 1 ファイル、依存なし) |
 
-`npm run build` で両方を作る。どちらも相対パスで参照し合うので、置くディレクトリは問わない。
+`npm run build` で `dist/` と `dist-card/` を作る。Lambda は `npm run build:lambda` で別に作る。どちらも相対パスで参照し合うので、置くディレクトリは問わない。
 
 ### フル版
 
@@ -22,10 +23,40 @@ AudioWorklet の中で 48kHz で合成する。
 
 `muslib-card.tnok.jp` (Lambda、この repo の外) が返すカードの `twitter:player` は
 `https://pceplayer-card.tnok.jp/player.html?m=<pmd の URL>` を指している。
-`dist-card/` の中身で `pceplayer-card.tnok.jp` を置き換えればよい。URL の形式 (`?m=`、`&enc=`) は旧版と同じ。
+`dist-card/` の中身で `pceplayer-card.tnok.jp` を置き換えればよい。URL の形式 (`?m=`) は旧版と同じ。
+旧版にあった `&enc=` (タイトルの文字コード) は、付いていても無視する。pmd のタイトルは Shift_JIS と決めている。
 `pme001.png` は Lambda がカードのサムネイルとして固定の URL で参照しているので、名前を変えないこと。
 
 X の Player Card はドメインの承認制なので、ホスト名は変えないこと。
+
+### カードの Lambda (`lambda/handler.ts`)
+
+`https://muslib-card.tnok.jp/card/card?m=<pmd の URL>` に対して、Player Card 用の HTML を返す (旧版の `&enc=` は無視する)。
+API Gateway の Lambda プロキシ統合 (REST / HTTP API のどちらでも) を想定している。
+
+- `twitter:player` は環境変数 `PLAYER_URL` (`https://pceplayer-card.tnok.jp/player.html`) に `?m=` を付けたもの
+- pmd のヘッダを読んで、曲のタイトルを `twitter:title` に、サブタイトルを `twitter:description` に出す。
+  読めなかったときは汎用の文言にする
+- `m` に指定できるのは `https://` の `tnok.jp` とそのサブドメインだけ (誤って他所の URL でカードを作らないため)。
+  それ以外や、`m` がないときは 400 を返す
+- Lambda から pmd を取りに行くので、64KB を超えるもの、リダイレクト、2.5 秒以上かかる応答は読まない
+
+デプロイ:
+
+- ランタイムは Node.js 22 以降で動く (`nodejs26.x` を推奨。22 は 2027 年 4 月に非推奨、7 月に更新できなくなる)。
+  `dist-lambda/lambda.zip` をアップロードする (ハンドラは `index.handler` のままでよい。Node.js のランタイムは `index.mjs` も探す)
+- タイトルの読み出しには Shift_JIS の `TextDecoder` (Node.js の完全な ICU) を使う。使えない環境では汎用の文言のカードになるので、
+  デプロイ後にテストイベントで `twitter:title` に曲名が出ることを確かめる
+- 関数のタイムアウトは 3 秒以上にする (pmd の取得に最大 2.5 秒かける)
+- 関数からインターネットに出られること (VPC に入れていなければそのまま出られる)
+
+旧版 (2018 年、Mustache を使っていたもの) からの変更点:
+
+- クエリがないと例外で 502 になっていたのを、400 にした
+- `m` を文字列のまま連結していたので、`m` に `&` を含めるとプレイヤーの URL に別のパラメータを足せた。
+  `URLSearchParams` で組み立てるようにした (そのため `m` はパーセントエンコードされる。プレイヤー側は新旧どちらもデコードして読む)
+- 使っていなかった旧エンジンのバンドル (`browser.dist.js`) と Mustache への依存をなくした
+- `Cache-Control` を付けた
 
 ### ウィジェット (他のページへの埋め込み)
 
@@ -55,7 +86,7 @@ X の Player Card はドメインの承認制なので、ホスト名は変え�
 npm install
 npm run dev-data      # 開発用の曲データ (libmuslib の test/fixtures) を dev-data/ に用意する
 npm run dev           # http://localhost:5173/
-npm test              # Vitest (pmd のヘッダ解析、取り込んだ wasm、gen-list)
+npm test              # Vitest (pmd のヘッダ解析、取り込んだ wasm、gen-list、カードの Lambda)
 npm run typecheck
 npm run build         # dist/ と dist-card/
 npm run preview       # dist/ を http://localhost:4173/ で確認
@@ -92,6 +123,7 @@ npm run update-muslib
 - `src/ui/` — Custom Elements (`<pmd-playlist>`, `<pmd-player>`, `<pmd-lcd>`)
 - `src/pmd.ts` — pmd のヘッダ解析とタイトルの文字コード変換 (AudioWorklet では TextDecoder が使えないためメインスレッドで行う)
 - `tools/gen-list.ts` — list.json の生成
+- `lambda/handler.ts` — カードの Lambda
 
 ## ライセンス
 

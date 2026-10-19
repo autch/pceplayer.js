@@ -37,14 +37,11 @@ export function parsePmd(data: Uint8Array): PmdHeader | null {
     };
 }
 
-/** タイトルのバイト列を文字列にする。pmd の文字コードは通常 Shift_JIS */
-export function decodeTitle(bytes: Uint8Array, encoding = 'shift_jis'): string {
-    let decoder: TextDecoder;
-    try {
-        decoder = new TextDecoder(encoding);
-    } catch {
-        decoder = new TextDecoder('shift_jis');
-    }
+/**
+ * タイトルのバイト列を文字列にする。pmd に埋め込まれるタイトルは Shift_JIS と決めている
+ * (旧版は UTF-8 なども選べたが、使われていない)。
+ */
+export function decodeTitle(bytes: Uint8Array): string {
     // mucc は MML の ";" を改行の意味で使う
-    return decoder.decode(bytes).replaceAll(';', '\n');
+    return new TextDecoder('shift_jis').decode(bytes).replaceAll(';', '\n');
 }

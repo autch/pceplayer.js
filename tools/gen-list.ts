@@ -20,7 +20,6 @@ const { values, positionals } = parseArgs({
     options: {
         href: { type: 'string', default: 'pmd/' },
         o: { type: 'string', default: 'list.json' },
-        encoding: { type: 'string', default: 'shift_jis' },
     },
 });
 if (positionals.length !== 1) {
@@ -44,8 +43,8 @@ for (const filename of names) {
         href: values.href + filename,
         filename,
         name: filename.replace(/\.pmd$/i, ''),
-        title: decodeTitle(header.title, values.encoding),
-        title2: decodeTitle(header.title2, values.encoding),
+        title: decodeTitle(header.title),
+        title2: decodeTitle(header.title2),
     });
 }
 

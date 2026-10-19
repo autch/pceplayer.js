@@ -145,8 +145,8 @@ export class PmdPlayer extends EventTarget {
         return window.isSecureContext && typeof AudioWorkletNode === 'function';
     }
 
-    /** url の pmd を再生する。encoding はタイトルの文字コード */
-    async play(url: string, encoding = 'shift_jis'): Promise<void> {
+    /** url の pmd を再生する */
+    async play(url: string): Promise<void> {
         if (!PmdPlayer.supported) {
             this.#id++;
             this.#fail(new PlayerError(window.isSecureContext
@@ -172,8 +172,8 @@ export class PmdPlayer extends EventTarget {
             if (!header) throw new PlayerError('pmd として読めないデータです');
             this.#set('loading', {
                 url,
-                title: decodeTitle(header.title, encoding),
-                title2: decodeTitle(header.title2, encoding),
+                title: decodeTitle(header.title),
+                title2: decodeTitle(header.title2),
             });
             node.port.postMessage({ type: 'play', id, pmd } satisfies ToProcessor);
         } catch (e) {
