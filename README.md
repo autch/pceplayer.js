@@ -1,7 +1,7 @@
 # pceplayer
 
 P/ECE の標準音楽ドライバ用の曲データ (pmd) を Web ブラウザで再生する。
-音源ドライバは [libmuslib](../libmuslib) (P/ECE muslib を整理したもの) の WebAssembly ビルドで、
+音源ドライバは [libmuslib](https://github.com/autch/libmuslib) (P/ECE muslib を整理したもの) の WebAssembly ビルドで、
 AudioWorklet の中で 48kHz で合成する。
 
 ## 成果物
@@ -107,6 +107,9 @@ npm run deploy -- lambda --test                # 更新後に実際の pmd で�
 
 ## 開発
 
+`npm run dev-data` と `npm run update-muslib` は、[libmuslib](https://github.com/autch/libmuslib) をこの repo と同じ階層 (`../libmuslib`) に clone してある前提で動く
+(別の場所なら `npm run update-muslib -- --from <libmuslib>`、`npm run dev-data -- --from <libmuslib>/test/fixtures`)。
+
 ```sh
 npm install
 npm run dev-data      # 開発用の曲データ (libmuslib の test/fixtures) を dev-data/ に用意する
@@ -130,7 +133,7 @@ node tools/gen-list.ts <pmd のディレクトリ> [--href pmd/] [-o list.json]
 
 ### 音源ドライバの更新
 
-`vendor/muslib/` は libmuslib でビルドした `muslib.wasm` と JS ラッパのコピー。
+`vendor/muslib/` は [libmuslib](https://github.com/autch/libmuslib) でビルドした `muslib.wasm` と JS ラッパのコピー。
 どのコミットから取ったかは `vendor/muslib/VERSION.json` にある。
 
 ```sh
