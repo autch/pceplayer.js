@@ -21,6 +21,8 @@ export declare class Muslib {
     /** タイトルの生バイト列 (文字コードは通常 Shift_JIS) */
     readonly title: Uint8Array;
     readonly title2: Uint8Array;
+    /** ヘッダに書かれたパート数 (play() の後で有効) */
+    readonly numParts: number;
     /** 確保したメモリを返す。以降このオブジェクトは使えない */
     dispose(): void;
 }

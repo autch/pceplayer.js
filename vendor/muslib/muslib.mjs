@@ -109,6 +109,11 @@ export class Muslib {
         return this.#cstr(this.#ex.muslib_title2(this.#ctx));
     }
 
+    /** ヘッダに書かれたパート数 (play() の後で有効) */
+    get numParts() {
+        return this.#ex.muslib_num_parts(this.#ctx);
+    }
+
     #cstr(p) {
         const u8 = this.#heapU8();
         const end = u8.indexOf(0, p);
