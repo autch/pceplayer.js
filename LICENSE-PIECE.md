@@ -30,11 +30,3 @@ Coded by MIO.H (OeRSTED)
 P/ECE SDK の `sysdev/music/` の `mus.c`、`seq.c`、`musdef.h`、`exp12.c`、`instdef.c`、`wavetable.c`、
 `wave/i_*.c` を元にしています。auPiECE.kpi (Yui N. / S. Kino. / Kobarin による改変版) と
 libmuslib を経由しています。ファイルごとの対応は libmuslib の `LICENSE-PIECE.md` を参照してください。
-
-## 免責
-
-このプログラムは P/ECE 標準音楽ライブラリ muslib のソースを改変したものを含みます。
-これらの改変についてアクアプラスはなんら関係なく、プログラムの内容およびその実行結果について、
-アクアプラスは一切の責任を負いません。このプログラムを使用したことによってユーザーの
-P/ECE ならびに PC に不具合が発生しても、その責任をアクアプラスに求めないでください。
-このプログラムに関する一切の事柄について、アクアプラスにサポートを求めてはいけません。

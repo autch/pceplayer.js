@@ -50,14 +50,6 @@
             max-width: 40em;
             color: var(--muted);
         }
-        footer {
-            max-width: 1120px;
-            margin: 0 auto;
-            padding: 2rem 16px 3rem;
-            font-size: 0.85rem;
-            color: var(--muted);
-        }
-        footer p { margin: 0.3rem 0; max-width: 60em; }
         a { color: var(--link); }
     </style>
     <script type="module" src="./src/main.ts"></script>
@@ -66,13 +58,9 @@
     <main>
         <header>
             <h1>P/ECE 曲データプレイヤー</h1>
-            <p>P/ECE の標準音楽ドライバ用の曲データ (pmd) を、実機と同じ音源ドライバで再生します。一覧から曲を選んでください。</p>
+            <p>P/ECE の標準音楽ドライバ用の曲データ (pmd) を、標準音楽ドライバのソースを元にした <a href="https://github.com/autch/libmuslib">libmuslib</a> で再生します。一覧から曲を選んでください。</p>
         </header>
         <pmd-playlist src="./list.json" layout="full"></pmd-playlist>
     </main>
-    <footer>
-        <p>音源ドライバは P/ECE 標準音楽ライブラリ muslib (Copyright (C)2001 AQUAPLUS Co., Ltd. / OeRSTED, Inc.) を改変したものです。アクアプラスはこのプログラムに関与しておらず、その内容と実行結果について責任を負いません。</p>
-        <p>曲データの著作権はそれぞれの作者にあります。</p>
-    </footer>
 </body>
 </html>
